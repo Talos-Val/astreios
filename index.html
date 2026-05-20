@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Astreios — Schul- &amp; Paten-KI (v6.6)</title>
+  <title>Astreios — Schul- &amp; Paten-KI (v6.6.1)</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
@@ -179,7 +179,7 @@
   </div>
 
   <div class="footer">
-    <span>&#169; Titus Wagner 2026 &mdash; Astreios v6.6 (Auto-Memory Edition)</span>
+    <span>&#169; Titus Wagner 2026 &mdash; Astreios v6.6.1 (Auto-Memory Edition)</span>
   </div>
 
   <div class="modal-overlay" id="settingsModal">
@@ -292,7 +292,7 @@
   function newChat(){ var c=newChatObj(); chats.unshift(c); saveChats(chats); go(c.id); }
   function go(id){ activeId=id; localStorage.setItem('astreios-active',id); renderList(); renderMsgs(); renderMemory(); }
   
-   Zar delChat(id,e){
+  function delChat(id,e){
     e.stopPropagation();
     chats=chats.filter(function(c){return c.id!==id;});
     if(!chats.length){var fc=newChatObj();chats.push(fc);}
@@ -387,9 +387,12 @@
   }
 
   function setStatus(busy,txt){
-    document.getElementById('statusDot').className='status-dot'+(busy?' busy':'');
-    document.getElementById('statusText').textContent=txt;
-    document.getElementById('sendBtn').disabled=busy;
+    var dot = document.getElementById('statusDot');
+    var st  = document.getElementById('statusText');
+    var btn = document.getElementById('sendBtn');
+    if(dot) dot.className='status-dot'+(busy?' busy':'');
+    if(st) st.textContent=txt;
+    if(btn) btn.disabled=busy;
   }
   function handleKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();}}
   function autoResize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,140)+'px';}
