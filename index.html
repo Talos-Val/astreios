@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Astreios — Schul- &amp; Paten-KI (v6.6.1)</title>
+  <title>Astreios — Schul- &amp; Paten-KI (v6.6.2)</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
@@ -179,7 +179,7 @@
   </div>
 
   <div class="footer">
-    <span>&#169; Titus Wagner 2026 &mdash; Astreios v6.6.1 (Auto-Memory Edition)</span>
+    <span>&#169; Titus Wagner 2026 &mdash; Astreios v6.6.2 (Safe-Prompt Edition)</span>
   </div>
 
   <div class="modal-overlay" id="settingsModal">
@@ -341,7 +341,7 @@
     list.innerHTML='';
     var chat = getChat();
     if(!chat || !chat.memory || !chat.memory.length){ 
-      list.innerHTML='<div style="font-size:12px;color:var(--text-dim);">Fakten werden beim Schreiben automatisch erkannt...</div>'; 
+      list.innerHTML='<div style="font-size:12px;color:var(--text-dim);">Wichtige Kerndetails werden automatisch erkannt...</div>'; 
       return; 
     }
     chat.memory.forEach(function(m){
@@ -355,7 +355,7 @@
   function getMemoryContext(){
     var chat = getChat();
     if(!chat || !chat.memory || !chat.memory.length) return '';
-    return '\n\nBisher bekannte Fakten über diesen Chat (unbedingt beachten!):\n'+chat.memory.map(function(m){return'- '+m.text;}).join('\n');
+    return '\n\nKontext zu diesem Gespräch:\n'+chat.memory.map(function(m){return'- '+m.text;}).join('\n');
   }
 
   function renderMsgs(){
@@ -423,12 +423,11 @@
       hist.push({role:'user',content:prompt});
 
       var roleContext=userName?' Der Name des Nutzers ist '+userName+'.':'';
-      var sys='Du bist Astreios, ein freundlicher, unkomplizierter KI-Assistent für Schüler und Klassenpaten.\n'+
-              'Richtlinien für verständliche, fehlerfreie Antworten:\n'+
-              '- Sei direkt, pragmatisch und herzlich. Keine unnötigen Wiederholungen.\n'+
-              '- Wenn der Nutzer privat redet oder Sorgen teilt: Antworte empathisch und kumpelhaft.\n'+
-              '- Wenn es um Patenstunden (5. Klasse) geht: Schlage konkrete, jugendgerechte Spiele vor (z.B. Namensspiele, Kooperationsspiele), ohne komplizierten Bürokratie-Kram.\n'+
-              '- Antworte präzise auf Deutsch.'+roleContext+getMemoryContext();
+      var sys='Du bist Astreios, ein absolut hilfsbereiter, optimistischer KI-Kumpel und Helfer für Schulalltag, Freizeit und Planung.\n'+
+              'Deine oberste Regel:\n'+
+              '- Sei lösungsorientiert, direkt und verständlich. Vermeide jede Form von unbegründeter Verweigerung.\n'+
+              '- Wenn Ideen für Gruppenaktivitäten, Kennenlernspiele oder Teambuilding gesucht werden, liefere sofort eine kreative Liste mit konkreten Spielregeln und Beispielen.\n'+
+              '- Antworte immer auf Deutsch, kumpelhaft und klar strukturiert.'+roleContext+getMemoryContext();
       
       var reply = await window.api([{role:'system',content:sys}].concat(hist));
       appendMsgDOM('assistant',reply);
@@ -437,8 +436,8 @@
 
       // AUTOMATISCHES GEDÄCHTNIS IM HINTERGRUND TRAGEN
       try {
-        var memSys = 'Analysiere die letzte Nachricht des Nutzers. Falls sie einen permanenten Fakt über seine Rolle, Klasse oder Situation enthält (z.B. "Ich bin Pate der 5b" oder "Wir sind 3 Leute"), extrahiere diesen Fakt als ultrakurzen Stichpunkt (max 5 Wörter). Wenn kein bleibender Fakt drin ist, antworte NUR mit dem Wort: NEIN';
-        var memPrompt = 'Nutzer-Nachricht: "' + prompt + '"';
+        var memSys = 'Lies die Nachricht. Wenn sie einen dauerhaften Fakt enthält (z.B. "Pate von 3 Leuten" oder "Klasse 5b"), schreibe diesen Fakt ultrakurz auf (max 4 Wörter). Wenn kein bleibender Fakt drin ist, antworte NUR: NEIN';
+        var memPrompt = 'Nachricht: "' + prompt + '"';
         var memReply = await window.api([{role:'system',content:memSys},{role:'user',content:memPrompt}]);
         var cleanMem = memReply.trim().replace(/['"']/g,'');
         if(cleanMem.length > 2 && !/^nein$/i.test(cleanMem) && cleanMem.length < 50) {
