@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Astreios — Schul- &amp; Paten-KI (v7.7 - Gemini Grid)</title>
+  <title>Astreios — Schul- &amp; Paten-KI (v7.8 - Smart Grid)</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
@@ -77,7 +77,7 @@
     .msg.user .msg-avatar { background:linear-gradient(135deg,var(--accent),var(--accent2)); }
     .msg.assistant .msg-avatar { background:linear-gradient(135deg,#1e2d45,#2d3d5a); border:1px solid var(--border); }
     
-    .msg-bubble { padding:12px 16px; border-radius:14px; font-size:14.5px; line-height:1.6; }
+    .msg-bubble { padding:12px 16px; border-radius:14px; font-size:14.5px; line-height:1.6; white-space: pre-wrap; }
     .msg.user .msg-bubble { background:linear-gradient(135deg,var(--accent),#4f46e5); color:#fff; border-top-right-radius:2px; }
     .msg.assistant .msg-bubble { background:var(--surface2); border:1px solid var(--border); color:var(--text); border-top-left-radius:2px; }
     
@@ -139,7 +139,7 @@
       <div class="messages" id="messages"></div>
       <div class="input-area">
         <div class="input-row">
-          <textarea id="userInput" placeholder="Plane eine Patenstunde, stelle Fragen oder quatsche privat..." rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+          <textarea id="userInput" placeholder="Tippe deine Frage... Nutze '!html' um Code zu generieren oder zu bearbeiten!" rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
           <button class="btn-send" id="sendBtn" onclick="sendMessage()">&#10148;</button>
         </div>
       </div>
@@ -147,7 +147,7 @@
   </div>
 
   <div class="footer">
-    <span>&#169; Titus Wagner 2026 &mdash; Astreios v7.7 (Google Primary Cluster Enabled)</span>
+    <span>&#169; Titus Wagner 2026 &mdash; Astreios v7.8 (Smart HTML Mode &amp; Gemini Core)</span>
   </div>
 
   <div class="modal-overlay" id="settingsModal">
@@ -172,7 +172,7 @@
 
   <script>
   // ==========================================
-  // HIER DEINE API KEYS EINTRAGEN (ZEILEN 146 & 147)
+  // HIER DEINE API KEYS EINTRAGEN (ZEILEN 148 & 149)
   // ==========================================
   var GOOGLE_API_KEY      = "HIER_DEIN_GOOGLE_API_KEY_REIN";
   var FEATHERLESS_API_KEY = "rc_3486f1290eee1e58fdacc717772e271f5d0416bd14569f6d46699cffe4690b5b";
@@ -197,7 +197,7 @@
   if(!chats.find(function(c){return c.id===activeId;})) activeId=null;
   if(chats.length===0){ var _fc=newChatObj(); chats.push(_fc); saveChats(chats); activeId=_fc.id; }
   if(!activeId) activeId=chats[0].id;
-  localStorage.setItem('astreios-active',activeId);
+  localStorage.setItem('activeId',activeId);
 
   function getChat(){ return chats.find(function(c){return c.id===activeId;}); }
   function newChat(){ var c=newChatObj(); chats.unshift(c); saveChats(chats); go(c.id); }
@@ -249,10 +249,9 @@
       var d=document.createElement('div'); d.className='msg assistant';
       d.innerHTML='<div class="msg-avatar">&#10022;</div><div class="msg-bubble">'+
         'Hi'+grName+'! Ich bin <strong>Astreios</strong>.<br><br>'+
-        'Ich laufe jetzt auf Google Gemini als Primär-Engine mitsamt einem Profi-Ausfallsystem (Featherless 70B &amp; AI Horde)!<br>'+
-        '- **Spiele &amp; Ideen:** Suchst du lustige Spaß-Spiele, Gruppenspiele oder Party-Ideen?<br>'+
-        '- **Erklärungen:** Lass dir komplexe Themen unkompliziert und extrem präzise aufschlüsseln.<br>'+
-        '- **Quatschen:** Schreib mir ganz entspannt über Gott und die Welt.';
+        'Ich laufe im **Smart-Grid-Modus**!<br>'+
+        '- **Normales Chatten:** Schreib mir ganz normal für Erklärungen, Spiele oder zum Quatschen.<br>'+
+        '- **HTML-Modus:** Schreibe **`!html`** vor deine Nachricht (z. B. *!html Füge einen Darkmode-Button hinzu*). Ich überarbeite dann sofort den kompletten HTML-Code dieser App für dich!';
       box.appendChild(d);
     } else {
       chat.messages.forEach(function(m){appendMsgDOM(m.role,m.content);});
@@ -263,8 +262,15 @@
   function appendMsgDOM(role,content){
     var box=document.getElementById('messages');
     var d=document.createElement('div'); d.className='msg '+role;
+    
+    // Falls es Code ist, in ein lesbares pre/code Element packen
+    var displayContent = esc(content);
+    if(content.includes('<!DOCTYPE html>') || content.includes('<html>')) {
+      displayContent = '<pre style="background:#0a0d14; padding:12px; border-radius:8px; border:1px solid var(--border); font-family:\'JetBrains Mono\',monospace; font-size:12px; overflow-x:auto; max-height:300px;">' + esc(content) + '</pre>';
+    }
+
     d.innerHTML='<div class="msg-avatar">'+(role==='user'?'&#128100;':'&#10022;')+'</div>'+
-      '<div class="msg-bubble">'+esc(content).replace(/\n/g,'<br>')+'</div>';
+      '<div class="msg-bubble">'+displayContent+'</div>';
     box.appendChild(d); box.scrollTop=box.scrollHeight;
   }
 
@@ -280,7 +286,7 @@
   function autoResize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,140)+'px';}
   function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 
-  /* TRIPLE POWER PIPELINE (GOOGLE GEMINI -> FEATHERLESS -> HORDE) */
+  /* PIPELINE WITH AUTOMATIC HTML MODE DETECTION */
   async function sendMessage(){
     if(isGen)return;
     var inp=document.getElementById('userInput');
@@ -298,10 +304,24 @@
     chat.messages.push({role:'user',content:prompt});
     saveChats(chats);
 
+    // SYSTEM PROMPTS BASE
     var systemPrompt = "Du bist Astreios, ein absolut hilfsbereiter, lockerer KI-Kumpel für Schüler im Schulalltag, Freizeit und Planung.\n" +
-                       "Richtlinien:\n- Antworte immer direkt, verständlich und ungezwungen auf Deutsch.\n" +
-                       "- Wenn nach Spielen gefragt wird, schlage lustige Spaß-Spiele vor. Konstruiere NIEMALS krampfhaft Lerneffekte oder pädagogische Zwecke hinein! Spaß steht im Vordergrund.\n";
+                       "Antworte immer direkt, verständlich und ungezwungen auf Deutsch.\n";
     if(userName) systemPrompt += "Der Name des Nutzers ist " + userName + ".\n";
+
+    // PRÜFEN OB HTML-MODUS AKTIV IST
+    var isHtmlMode = prompt.toLowerCase().startsWith('!html');
+    
+    if(isHtmlMode) {
+      // Wenn im HTML-Modus, injizieren wir den gesamten aktuellen Quellcode in den System-Prompt
+      var currentCode = document.documentElement.outerHTML;
+      systemPrompt = "Du bist ein weltklasse Web-Entwickler. Der Nutzer möchte, dass du den Code seiner App überarbeitest.\n" +
+                     "Hier ist der AKTULLE, VOLLSTÄNDIGE Code der App:\n\n" + currentCode + "\n\n" +
+                     "AUFGABE:\n" +
+                     "Setze den Wunsch des Nutzers perfekt um. Antworte AUSSCHLIESSLICH mit dem neuen, kompletten, modifizierten HTML-Code. " +
+                     "Schreibe keinen Text davor und danach, keine Erklärungen, sondern fange direkt mit <!DOCTYPE html> an und ende mit </html>. " +
+                     "Achte darauf, die vorhandenen Funktionen und Styles nicht kaputt zu machen!";
+    }
 
     var replyText = "";
     
@@ -310,7 +330,6 @@
     // -------------------------------------------------------------
     setStatus(true, 'Verbinde Cluster Alpha (Google Gemini)...');
     try {
-      // Verlauf für Gemini Format konvertieren
       var geminiContents = [];
       var prevMsgs = chat.messages.slice(-6);
       
@@ -329,7 +348,7 @@
         body: JSON.stringify({
           contents: geminiContents,
           systemInstruction: { parts: [{ text: systemPrompt }] },
-          generationConfig: { maxOutputTokens: 600, temperature: 0.7 }
+          generationConfig: { maxOutputTokens: 2048, temperature: 0.3 } // Niedrigere Temp für Code-Stabilität
         })
       });
 
@@ -338,10 +357,14 @@
       var data = await response.json();
       replyText = data.candidates[0].content.parts[0].text.trim();
 
+      // Bereinige Markdown Code-Blocks (```html ... ```), falls die KI sie mitsendet
+      if(isHtmlMode) {
+        replyText = replyText.replace(/^```html\s*/i, '').replace(/```$/, '');
+      }
+
     } catch(err) {
       console.log("Gemini fehlgeschlagen. Wechsle zu Stufe 2 (Featherless)...", err.message);
       
-      // OpenAI Format für die nächsten Stufen vorbereiten
       var formattedMessages = [{role: "system", content: systemPrompt}];
       var prev = chat.messages.slice(-5);
       prev.forEach(function(m){
@@ -362,8 +385,8 @@
           body: JSON.stringify({
             model: "meta-llama/Meta-Llama-3.1-70B-Instruct",
             messages: formattedMessages,
-            temperature: 0.7,
-            max_tokens: 600
+            temperature: 0.5,
+            max_tokens: 2048
           })
         });
 
@@ -371,6 +394,10 @@
         
         var flData = await flResponse.json();
         replyText = flData.choices[0].message.content.trim();
+        
+        if(isHtmlMode) {
+          replyText = replyText.replace(/^```html\s*/i, '').replace(/```$/, '');
+        }
 
       } catch(flErr) {
         console.log("Featherless fehlgeschlagen. Wechsle zu Stufe 3 (AI Horde)...", flErr.message);
@@ -391,10 +418,10 @@
             headers: {
               "Content-Type": "application/json",
               "apikey": "0000000000",
-              "Client-Agent": "AstreiosSchoolApp:v7.7"
+              "Client-Agent": "AstreiosSchoolApp:v7.8"
             },
             body: JSON.stringify({
-              params: { prompt: fullPrompt, max_context_length: 2048, max_length: 600, temperature: 0.7, top_p: 0.9 },
+              params: { prompt: fullPrompt, max_context_length: 2048, max_length: 1024, temperature: 0.5 },
               models: ["meta-llama/Meta-Llama-3.1-70B-Instruct"]
             })
           });
@@ -412,7 +439,7 @@
 
             var checkReq = await fetch("https://aihorde.net/api/v2/generate/text/status/" + jobId, {
               method: "GET",
-              headers: { "Client-Agent": "AstreiosSchoolApp:v7.7" }
+              headers: { "Client-Agent": "AstreiosSchoolApp:v7.8" }
             });
 
             if(checkReq.ok) {
@@ -429,9 +456,12 @@
           }
 
           if(!completed || !replyText) throw new Error("Horde-Timeout.");
+          if(isHtmlMode) {
+            replyText = replyText.replace(/^```html\s*/i, '').replace(/```$/, '');
+          }
 
         } catch(hordeErr) {
-          replyText = "[Verbindungsproblem] Alle KI-Netzwerke (Google, Featherless & Horde) sind derzeit überlastet. Bitte warte kurz und versuche es erneut.";
+          replyText = "[Verbindungsproblem] Alle KI-Netzwerke (Google, Featherless & Horde) sind derzeit ausgelastet. Bitte versuche es gleich noch einmal.";
         }
       }
     }
