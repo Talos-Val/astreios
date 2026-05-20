@@ -185,7 +185,6 @@
   </header>
 
   <div class="main">
-    <!-- SIDEBAR -->
     <div class="chat-sidebar">
       <div class="sidebar-header">
         <span class="sidebar-title">Chats</span>
@@ -194,7 +193,6 @@
       <div class="chat-list" id="chatList"></div>
     </div>
 
-    <!-- CHAT PANEL -->
     <div class="chat-panel" id="chatPanel">
       <div class="panel-header">
         <div><span class="status-dot" id="statusDot"></span><span id="statusText">Bereit</span></div>
@@ -202,7 +200,7 @@
       </div>
       <div class="messages" id="messages"></div>
       <div class="input-area">
-        <div class="ai-loading-banner" id="aiLoadingBanner">&#9654; KI wird geladen... Llama-3.2-3B wird einmalig heruntergeladen (~2GB). Bitte warten.</div>
+        <div class="ai-loading-banner" id="aiLoadingBanner">&#9654; KI wird geladen... Modell wird einmalig heruntergeladen. Bitte warten.</div>
         <div class="input-row">
           <textarea id="userInput" placeholder="Schreib mir etwas... Oder: !html [Beschreibung] fuer HTML-Code" rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
           <button class="btn-send" id="sendBtn" onclick="sendMessage()">&#10148;</button>
@@ -210,7 +208,6 @@
       </div>
     </div>
 
-    <!-- CODE PANEL -->
     <div class="code-panel" id="codePanel">
       <div class="code-toolbar">
         <div class="code-toolbar-title" id="codeTitle">// Noch kein Code generiert</div>
@@ -230,11 +227,10 @@
   </div>
 
   <div class="footer">
-    <span>&#169; Titus Wagner 2026 &mdash; Astreios HTML Coder v5.7 &mdash; Llama-3.2-3B</span>
+    <span>&#169; Titus Wagner 2026 &mdash; Astreios HTML Coder v5.7 &mdash; Offline Engine</span>
     <a href="https://talos-val.github.io/project-data" target="_blank">talos-val.github.io/project-data &#8599;</a>
   </div>
 
-  <!-- SETTINGS MODAL -->
   <div class="modal-overlay" id="settingsModal">
     <div class="modal">
       <div class="modal-title">&#9881; Einstellungen</div>
@@ -242,12 +238,13 @@
       <div class="fg">
         <label class="fl">&#129302; KI-Modell</label>
         <select class="fi" id="modelSelect">
-          <option value="Llama-3.2-3B-Instruct-q4f16_1-MLC">Llama-3.2-3B &mdash; Standard (klug, ~2GB)</option>
+          <option value="Llama-3.2-0.5B-Instruct-q4f16_1-MLC">Llama-3.2-0.5B &mdash; Extrem schnell &amp; leicht (~0.4GB)</option>
           <option value="Llama-3.2-1B-Instruct-q4f16_1-MLC">Llama-3.2-1B &mdash; Schnell &amp; sparsam (~0.8GB)</option>
+          <option value="Llama-3.2-3B-Instruct-q4f16_1-MLC">Llama-3.2-3B &mdash; Standard (Sehr klug, bester Kompromiss, ~2GB)</option>
           <option value="Qwen2.5-Coder-1.5B-Instruct-q4f16_1-MLC">Qwen2.5-Coder-1.5B &mdash; Code-Fokus (~1GB)</option>
-          <option value="Qwen2.5-7B-Instruct-q4f16_1-MLC">Qwen2.5-7B &mdash; Sehr klug (~5GB, braucht viel RAM)</option>
+          <option value="Qwen2.5-7B-Instruct-q4f16_1-MLC">&#11088; Qwen2.5-7B &mdash; Premium (Extrem intelligent, ~5GB, braucht viel RAM)</option>
         </select>
-        <div class="fh">&#9888; Modellwechsel laedt die neue KI beim naechsten Start. Groessere Modelle = klüger, aber mehr RAM &amp; Ladezeit. Llama-3.2-3B ist der beste Kompromiss fuer A16.</div>
+        <div class="fh">&#9888; Modellwechsel lädt die neue KI beim nächsten Start. Größere Modelle = klüger, benötigen aber mehr RAM &amp; Ladezeit. Die Premium-Version (7B) läuft am besten auf leistungsstarken Geräten mit viel Arbeitsspeicher.</div>
       </div>
 
       <div class="fg">
@@ -296,19 +293,13 @@
     </div>
   </div>
 
-  <!-- ═══════════════════════════════════════════════════════ -->
-  <!-- LOKALE KI ENGINE (Web-LLM via WebGPU)                  -->
-  <!-- ═══════════════════════════════════════════════════════ -->
   <script type="module">
     import { CreateMLCEngine } from "https://esm.run/@mlc-ai/web-llm";
 
-    // Llama-3.2-3B: Viel intelligenter als 0.5B, laeuft auf A16 / WebGPU
-    // Alternativ: "Qwen2.5-7B-Instruct-q4f16_1-MLC" (noch klüger, braucht ~6GB RAM)
     let LOCAL_MODEL = localStorage.getItem('astreios-model') || 'Llama-3.2-3B-Instruct-q4f16_1-MLC';
     let engine = null;
     let engineLoading = false;
 
-    // Erlaubt Reset von aussen (Modellwechsel)
     window._astreiosResetEngine = function() {
       engine = null;
       engineLoading = false;
@@ -318,14 +309,12 @@
     async function initLocalAI() {
       if (engine) return;
       if (engineLoading) {
-        // Warten bis Engine fertig – aber maximal 120 Sekunden
         var waited = 0;
         while (engineLoading && waited < 120000) {
           await new Promise(r => setTimeout(r, 200));
           waited += 200;
         }
         if (engineLoading) {
-          // Timeout: Engine haengt – hart zuruecksetzen
           engineLoading = false;
           engine = null;
           throw new Error("KI-Ladevorgang hat zu lange gedauert (Timeout). Bitte Seite neu laden und erneut versuchen.");
@@ -350,7 +339,6 @@
         document.getElementById('modelBadge').textContent = shortName + " \u2713";
         setStatus(false, "Bereit");
       } catch(err) {
-        // Engine-Fehler: Zustand vollstaendig zuruecksetzen damit ein Retry moeglich ist
         engine = null;
         throw err;
       } finally {
@@ -359,11 +347,9 @@
       }
     }
 
-    // Ersetzt vollstaendig die alte OpenRouter api()-Funktion
     window.api = async function(messages) {
       if (!engine) await initLocalAI();
 
-      // Intelligente Temperatur: praezise fuer Code, natuerlicher fuer Chat
       var lastMsg = messages[messages.length - 1].content.toLowerCase();
       var isCodeTask = lastMsg.indexOf("html") !== -1 ||
                        lastMsg.indexOf("code") !== -1 ||
@@ -393,30 +379,23 @@
     }
   </script>
 
-  <!-- ═══════════════════════════════════════════════════════ -->
-  <!-- HAUPT-LOGIK                                             -->
-  <!-- ═══════════════════════════════════════════════════════ -->
   <script>
-  // ── SETTINGS ──────────────────────────────────────────────
   var maxChunks = parseInt(localStorage.getItem('astreios-chunks') || '5');
   var userName  = localStorage.getItem('astreios-username') || '';
   var selectedModel = localStorage.getItem('astreios-model') || 'Llama-3.2-3B-Instruct-q4f16_1-MLC';
   var isGen     = false;
 
-  // ── MEMORY ────────────────────────────────────────────────
   function loadMemory(){ try{ return JSON.parse(localStorage.getItem('astreios-memory')||'[]'); }catch(e){ return []; } }
   function saveMemory(m){ localStorage.setItem('astreios-memory',JSON.stringify(m)); }
   var memory = loadMemory();
 
-  // ── PERSONAL MEMORY (auto, still) ─────────────────────────
   function loadPersonalMemory(){ try{ return JSON.parse(localStorage.getItem('astreios-personal-memory')||'{}'); }catch(e){ return {}; } }
   function savePersonalMemory(m){ localStorage.setItem('astreios-personal-memory',JSON.stringify(m)); }
   var personalMemory = loadPersonalMemory();
 
-  // Extrahiert persoenliche Infos still im Hintergrund
   async function extractPersonalInfo(userMsg){
     if(!userMsg||userMsg.length<10) return;
-    if(Math.random()>0.4) return; // nur ~40% der Nachrichten pruefen
+    if(Math.random()>0.4) return;
     try{
       var existing=Object.keys(personalMemory).length?JSON.stringify(personalMemory):'{}';
       var sys='Du extrahierst persoenliche Informationen aus Nutzernachrichten und gibst sie als kompaktes JSON zurueck.\n'+
@@ -431,7 +410,7 @@
       var parsed=JSON.parse(clean);
       Object.assign(personalMemory, parsed);
       savePersonalMemory(personalMemory);
-    }catch(e){ /* silent fail */ }
+    }catch(e){ }
   }
 
   function getPersonalMemoryContext(){
@@ -490,7 +469,6 @@
     return false;
   }
 
-  // ── CHAT STORAGE ──────────────────────────────────────────
   function loadChats(){ try{ return JSON.parse(localStorage.getItem('astreios-chats')||'[]'); }catch(e){ return []; } }
   function saveChats(c){ localStorage.setItem('astreios-chats',JSON.stringify(c)); }
   function genId(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
@@ -505,7 +483,6 @@
 
   function getChat(){ return chats.find(function(c){return c.id===activeId;}); }
 
-  // ── CHAT MANAGEMENT ───────────────────────────────────────
   function newChat(){
     var c=newChatObj(); chats.unshift(c); saveChats(chats); go(c.id);
   }
@@ -538,7 +515,6 @@
     });
   }
 
-  // ── RENDER ────────────────────────────────────────────────
   function renderList(){
     var list=document.getElementById('chatList'); list.innerHTML='';
     chats.forEach(function(chat){
@@ -562,13 +538,14 @@
     if(!chat.messages.length){
       var grName=userName?', '+esc(userName):'';
       var d=document.createElement('div'); d.className='msg assistant';
+      var shortName=selectedModel.split('-Instruct')[0].split('-q4')[0];
       d.innerHTML='<div class="msg-avatar">&#10022;</div><div class="msg-bubble">'+
         'Ich bin Astreios'+grName+'. Ich antworte, denke mit und bin direkt.<br><br>'+
-        'Ich laufe zu <strong>100% lokal und offline auf deinem Ger\u00e4t</strong> mit <strong>Llama-3.2-3B</strong> &mdash; kein Internet, keine Passw\u00f6rter, keine Cloud.<br><br>'+
+        'Ich laufe zu <strong>100% lokal und offline auf deinem Ger\u00e4t</strong> mit <strong>'+esc(shortName)+'</strong> &mdash; kein Internet, keine Passw\u00f6rter, keine Cloud.<br><br>'+
         '<strong>&#11041; HTML generieren:</strong> Schreibe <code style="background:var(--surface);border:1px solid var(--border);padding:2px 7px;border-radius:4px;font-size:12px;color:var(--accent2);">!html deine Beschreibung</code><br>'+
         '<span style="font-size:13px;color:var(--text-dim);">z.B. <em>!html eine moderne Portfolio-Seite mit dunklem Theme</em></span><br><br>'+
         '<strong>&#128172; Einfach reden:</strong> Schreib ohne <code style="background:var(--surface);border:1px solid var(--border);padding:2px 7px;border-radius:4px;font-size:12px;color:var(--accent2);">!html</code> &ndash; dann unterhalten wir uns ganz normal.<br><br>'+
-        '<span style="font-size:12px;color:var(--text-dim);">Beim ersten Start wird Llama-3.2-3B (~2GB) einmalig heruntergeladen und dann gecacht. Danach komplett offline.</span></div>';
+        '<span style="font-size:12px;color:var(--text-dim);">Beim ersten Start wird das gewählte Modell einmalig heruntergeladen und dann gecacht. Danach komplett offline.</span></div>';
       box.appendChild(d);
     } else {
       chat.messages.forEach(function(m){appendMsgDOM(m.role,m.content,m.isHTML);});
@@ -592,7 +569,6 @@
     applyCode(chat.code,chat.totalChunks,false);
   }
 
-  // ── MSG UI ────────────────────────────────────────────────
   function appendMsgDOM(role,content,isHTML){
     var box=document.getElementById('messages');
     var d=document.createElement('div'); d.className='msg '+role;
@@ -634,7 +610,6 @@
   function handleKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();}}
   function autoResize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,120)+'px';}
 
-  // ── CODE OUTPUT ───────────────────────────────────────────
   function applyCode(code,chunks,persist){
     document.getElementById('codeOutput').textContent=code;
     var lines=code.split('\n').length, chars=code.length;
@@ -670,7 +645,6 @@
     var w=window.open('','_blank'); w.document.write(c.code); w.document.close();
   }
 
-  // ── DETECT MODIFICATION ───────────────────────────────────
   function isMod(p){
     var kw=[
       'ergaenz','erg\u00e4nz','f\u00fcge','fuege','hinzuf','\u00e4nder','aender','anpass',
@@ -689,7 +663,6 @@
     return false;
   }
 
-  // ── DETECT CODE REQUEST ───────────────────────────────────
   function isCodeReq(p){
     var kw=[
       'erstell','generier','baue','bau mir','mach mir','schreib','erzeug','code',
@@ -702,7 +675,6 @@
     return false;
   }
 
-  // ── SEND ──────────────────────────────────────────────────
   async function sendMessage(){
     if(isGen)return;
     var inp=document.getElementById('userInput');
@@ -712,7 +684,6 @@
     var chat=getChat();
     var existing=(chat&&chat.code)||'';
 
-    // !lern-Befehl
     if(checkLearnCommand(prompt)){
       addMsg('user',prompt,false);
       var learnContent=prompt.replace(/^!lern\s+/i,'').replace(/^(?:merke dir(?:,?\s+dass)?|lern(?:e)?(?::|,)?\s+)/i,'').trim();
@@ -723,7 +694,6 @@
       return;
     }
 
-    // !html-Befehl
     var isHtmlCmd=/^!html\s*/i.test(prompt);
     var realPrompt=isHtmlCmd?prompt.replace(/^!html\s*/i,'').trim():prompt;
 
@@ -733,7 +703,7 @@
     }
 
     addMsg('user',prompt,false);
-    extractPersonalInfo(prompt); // still im Hintergrund
+    extractPersonalInfo(prompt);
 
     setStatus(true,'Verarbeite...');
     try{
@@ -761,7 +731,6 @@
     isGen=false;
   }
 
-  // ── CONVERSATION ──────────────────────────────────────────
   async function doChat(prompt){
     setStatus(true,'Astreios antwortet...');
     var nc=userName?' Der Name meines Gegenueber ist '+userName+'.':'';
@@ -782,7 +751,6 @@
     setStatus(false,'Fertig');
   }
 
-  // ── FRESH GENERATION ──────────────────────────────────────
   async function doFresh(prompt){
     var nc=userName?' Der Nutzer heisst '+userName+'.':'';
     var plan=await window.api([
@@ -812,7 +780,6 @@
     setStatus(false,'Fertig');
   }
 
-  // ── MODIFICATION ──────────────────────────────────────────
   async function doMod(prompt,existing){
     setStatus(true,'Analysiere Aenderungswunsch...');
     var nc=userName?' Der Nutzer heisst '+userName+'.':'';
@@ -851,7 +818,6 @@
     setStatus(false,'Fertig');
   }
 
-  // ── SETTINGS UI ───────────────────────────────────────────
   function openSettings(){
     document.getElementById('userNameInput').value=userName;
     document.getElementById('maxChunksSelect').value=maxChunks;
@@ -869,7 +835,6 @@
     if(newModel!==selectedModel){
       selectedModel=newModel;
       localStorage.setItem('astreios-model',selectedModel);
-      // Engine zuruecksetzen damit neues Modell geladen wird
       if(window._astreiosResetEngine) window._astreiosResetEngine();
       var shortName=selectedModel.split('-Instruct')[0].split('-q4')[0];
       document.getElementById('modelBadge').textContent=shortName;
@@ -880,10 +845,9 @@
     if(chat&&!chat.messages.length) renderMsgs();
   }
 
-  // ── EXPORT / IMPORT ──────────────────────────────────────
   function exportData(){
     var payload={
-      version:'5.6-Local',
+      version:'5.7-Local',
       exported:new Date().toISOString(),
       settings:{ maxChunks:maxChunks, userName:userName },
       memory:memory,
@@ -961,7 +925,6 @@
     reader.readAsText(file,'UTF-8');
   }
 
-  // ── MOBILE TABS ───────────────────────────────────────────
   function switchTab(tab){
     document.getElementById('chatPanel').classList.toggle('hidden',tab!=='chat');
     document.getElementById('codePanel').classList.toggle('hidden',tab!=='code');
@@ -970,7 +933,6 @@
   }
   document.getElementById('settingsModal').addEventListener('click',function(e){if(e.target.id==='settingsModal')closeSettings();});
 
-  // ── INIT ──────────────────────────────────────────────────
   renderList(); renderMsgs(); renderCode();
   </script>
 </body>
