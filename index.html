@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Astreios — Schul- &amp; Paten-KI (v7.0)</title>
+  <title>Astreios — Schul- &amp; Paten-KI (v7.7 - Gemini Grid)</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
@@ -114,7 +114,7 @@
       <div class="logo-star">&#10022;</div>
       <div>
         <div class="logo-name">ASTREIOS</div>
-        <div class="logo-tag">Schul-KI &amp; Paten-Planer &middot; Global Horde Engine</div>
+        <div class="logo-tag">Schul-KI &amp; Paten-Planer &middot; Google Dynamic Grid</div>
       </div>
     </div>
     <div class="header-right">
@@ -134,7 +134,7 @@
     <div class="chat-panel">
       <div class="panel-header">
         <div><span class="status-dot" id="statusDot"></span><span id="statusText">Bereit</span></div>
-        <div class="model-badge" id="modelBadge">Llama-3.1-8B</div>
+        <div class="model-badge" id="modelBadge">Gemini Engine Active</div>
       </div>
       <div class="messages" id="messages"></div>
       <div class="input-area">
@@ -147,7 +147,7 @@
   </div>
 
   <div class="footer">
-    <span>&#169; Titus Wagner 2026 &mdash; Astreios v7.0 (Distributed Crowd Infrastructure)</span>
+    <span>&#169; Titus Wagner 2026 &mdash; Astreios v7.7 (Google Primary Cluster Enabled)</span>
   </div>
 
   <div class="modal-overlay" id="settingsModal">
@@ -156,10 +156,7 @@
       <div class="fg">
         <label class="fl">&#129302; KI-Modell (Globaler Cluster)</label>
         <select class="fi" id="modelSelect">
-          <option value="meta-llama/Meta-Llama-3.1-8B-Instruct" selected>Llama-3.1-8B &mdash; Empfohlener Allrounder (Sehr Intelligent)</option>
-          <option value="meta-llama/Llama-3.3-70B-Instruct">Llama-3.3-70B &mdash; Extreme Power (Erfordert ggf. mehr Wartezeit)</option>
-          <option value="meta-llama/Llama-3.2-3B-Instruct">Llama-3.2-3B &mdash; Leichtgewicht (Schnellere Generation)</option>
-          <option value="mistralai/Mistral-7B-Instruct-v0.3">Mistral-7B &mdash; Sehr kreativ für Spiele &amp; Texte</option>
+          <option value="gemini" selected>Gemini Ultra-Intelligence (Google / Featherless 70B Backup)</option>
         </select>
       </div>
       <div class="fg">
@@ -174,15 +171,20 @@
   </div>
 
   <script>
+  // ==========================================
+  // HIER DEINE API KEYS EINTRAGEN (ZEILEN 146 & 147)
+  // ==========================================
+  var GOOGLE_API_KEY      = "HIER_DEIN_GOOGLE_API_KEY_REIN";
+  var FEATHERLESS_API_KEY = "rc_3486f1290eee1e58fdacc717772e271f5d0416bd14569f6d46699cffe4690b5b";
+  // ==========================================
+
   var userName = localStorage.getItem('astreios-username') || '';
-  var selectedModel = localStorage.getItem('astreios-model') || 'meta-llama/Meta-Llama-3.1-8B-Instruct';
   var isGen = false;
 
   function updateBadge(){
     var b = document.getElementById('modelBadge');
     if(!b) return;
-    var parts = selectedModel.split('/');
-    b.textContent = parts[parts.length-1];
+    b.textContent = "Gemini / Llama-70B Hybrid";
   }
   updateBadge();
 
@@ -247,9 +249,9 @@
       var d=document.createElement('div'); d.className='msg assistant';
       d.innerHTML='<div class="msg-avatar">&#10022;</div><div class="msg-bubble">'+
         'Hi'+grName+'! Ich bin <strong>Astreios</strong>.<br><br>'+
-        'Ich bin jetzt an einen dezentralen Hochleistungs-Cluster angebunden! Das bedeutet unlimitierte KI-Power ohne Geräte-Überlastung.<br>'+
+        'Ich laufe jetzt auf Google Gemini als Primär-Engine mitsamt einem Profi-Ausfallsystem (Featherless 70B &amp; AI Horde)!<br>'+
         '- **Spiele &amp; Ideen:** Suchst du lustige Spaß-Spiele, Gruppenspiele oder Party-Ideen?<br>'+
-        '- **Erklärungen:** Lass dir komplexe Themen unkompliziert und detailliert aufschlüsseln.<br>'+
+        '- **Erklärungen:** Lass dir komplexe Themen unkompliziert und extrem präzise aufschlüsseln.<br>'+
         '- **Quatschen:** Schreib mir ganz entspannt über Gott und die Welt.';
       box.appendChild(d);
     } else {
@@ -278,7 +280,7 @@
   function autoResize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,140)+'px';}
   function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 
-  /* ASYNCHRONOUS HORDE PIPELINE IMPLEMENTATION */
+  /* TRIPLE POWER PIPELINE (GOOGLE GEMINI -> FEATHERLESS -> HORDE) */
   async function sendMessage(){
     if(isGen)return;
     var inp=document.getElementById('userInput');
@@ -296,110 +298,159 @@
     chat.messages.push({role:'user',content:prompt});
     saveChats(chats);
 
-    setStatus(true,'Verbinde Cluster...');
+    var systemPrompt = "Du bist Astreios, ein absolut hilfsbereiter, lockerer KI-Kumpel für Schüler im Schulalltag, Freizeit und Planung.\n" +
+                       "Richtlinien:\n- Antworte immer direkt, verständlich und ungezwungen auf Deutsch.\n" +
+                       "- Wenn nach Spielen gefragt wird, schlage lustige Spaß-Spiele vor. Konstruiere NIEMALS krampfhaft Lerneffekte oder pädagogische Zwecke hinein! Spaß steht im Vordergrund.\n";
+    if(userName) systemPrompt += "Der Name des Nutzers ist " + userName + ".\n";
+
+    var replyText = "";
     
+    // -------------------------------------------------------------
+    // STUFE 1: Google Gemini API (Ultraschnell & kein 24h-Lockout)
+    // -------------------------------------------------------------
+    setStatus(true, 'Verbinde Cluster Alpha (Google Gemini)...');
     try {
-      // Prompt Formatierung für High-End Open-Source Modelle bauen
-      var fullPrompt = "### System:\nDu bist Astreios, ein absolut hilfsbereiter, lockerer KI-Kumpel für Schüler im Schulalltag, Freizeit und Planung.\n" +
-                        "Richtlinien:\n- Antworte immer direkt, verständlich und ungezwungen auf Deutsch.\n" +
-                        "- Wenn nach Spielen gefragt wird, schlage lustige Spaß-Spiele vor. Konstruiere NIEMALS krampfhaft Lerneffekte oder pädagogische Zwecke hinein! Spaß steht im Vordergrund.\n";
+      // Verlauf für Gemini Format konvertieren
+      var geminiContents = [];
+      var prevMsgs = chat.messages.slice(-6);
       
-      if(userName) fullPrompt += "Der Name des Nutzers ist " + userName + ".\n";
-      fullPrompt += "\n";
-
-      var prev = chat.messages.slice(0,-1).slice(-4);
-      prev.forEach(function(m){
-        fullPrompt += (m.role === 'user' ? '### User:\n' : '### Assistant:\n') + m.content + '\n\n';
+      prevMsgs.forEach(function(m){
+        geminiContents.push({
+          role: m.role === 'user' ? 'user' : 'model',
+          parts: [{ text: m.content }]
+        });
       });
-      fullPrompt += "### User:\n" + prompt + "\n\n### Assistant:\n";
 
-      // Schritt 1: Sende Generationsauftrag an die Horde
-      var reqStart = await fetch("https://aihorde.net/api/v2/generate/text/async", {
+      var geminiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + GOOGLE_API_KEY;
+
+      var response = await fetch(geminiUrl, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "apikey": "0000000000", // Offizieller anonymer Key
-          "Client-Agent": "AstreiosSchoolApp:v7.0"
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          prompt: fullPrompt,
-          params: {
-            max_context_length: 2048,
-            max_length: 600,
-            temperature: 0.7,
-            top_p: 0.9
-          },
-          models: [selectedModel]
+          contents: geminiContents,
+          systemInstruction: { parts: [{ text: systemPrompt }] },
+          generationConfig: { maxOutputTokens: 600, temperature: 0.7 }
         })
       });
 
-      if(!reqStart.ok) throw new Error("Netzwerk-Cluster verweigert Annahme.");
-      var startData = await reqStart.json();
-      var jobId = startData.id;
-
-      // Schritt 2: Polling Schleife bis das Ergebnis fertig ist
-      var completed = false;
-      var attempts = 0;
-      var replyText = "";
-
-      setStatus(true, 'In Warteschlange...');
-
-      while(!completed && attempts < 40) {
-        await new Promise(function(r){ setTimeout(r, 1500); });
-        attempts++;
-
-        var checkReq = await fetch("https://aihorde.net/api/v2/generate/text/status/" + jobId, {
-          method: "GET",
-          headers: { "Client-Agent": "AstreiosSchoolApp:v7.0" }
-        });
-
-        if(checkReq.ok) {
-          var statusData = await checkReq.json();
-          
-          if(statusData.faulted) {
-            throw new Error("Cluster-Rechenknoten hatte einen Berechnungsfehler.");
-          }
-          
-          if(statusData.wait_time > 0) {
-            setStatus(true, 'Berechne (~' + statusData.wait_time + 's)...');
-          }
-
-          if(statusData.done) {
-            completed = true;
-            if(statusData.generations && statusData.generations.length > 0) {
-              replyText = statusData.generations[0].text.trim();
-            }
-          }
-        }
-      }
-
-      if(!completed) throw new Error("Zeitüberschreitung beim Warten auf freien Grafikprozessor.");
-      if(!replyText) replyText = "Ich habe eine leere Antwort erhalten. Bitte versuche es noch einmal.";
-
-      appendMsgDOM('assistant', replyText);
-      chat.messages.push({role:'assistant',content:replyText});
-      saveChats(chats);
-      setStatus(false,'Bereit');
+      if(!response.ok) throw new Error("Alpha-Cluster ausgelastet oder Limit erreicht.");
+      
+      var data = await response.json();
+      replyText = data.candidates[0].content.parts[0].text.trim();
 
     } catch(err) {
-      appendMsgDOM('assistant','[Verbindungsproblem] Ich konnte den globalen Rechen-Cluster nicht erreichen. Details: '+err.message);
-      setStatus(false,'Fehler');
+      console.log("Gemini fehlgeschlagen. Wechsle zu Stufe 2 (Featherless)...", err.message);
+      
+      // OpenAI Format für die nächsten Stufen vorbereiten
+      var formattedMessages = [{role: "system", content: systemPrompt}];
+      var prev = chat.messages.slice(-5);
+      prev.forEach(function(m){
+        formattedMessages.push({role: m.role, content: m.content});
+      });
+
+      // -------------------------------------------------------------
+      // STUFE 2: Featherless.AI API (Llama 3.1 70B Profi-Backup)
+      // -------------------------------------------------------------
+      setStatus(true, 'Wechsle zu Cluster Beta (Featherless)...');
+      try {
+        var flResponse = await fetch("https://api.featherless.ai/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Authorization": "Bearer " + FEATHERLESS_API_KEY,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            model: "meta-llama/Meta-Llama-3.1-70B-Instruct",
+            messages: formattedMessages,
+            temperature: 0.7,
+            max_tokens: 600
+          })
+        });
+
+        if(!flResponse.ok) throw new Error("Beta-Cluster ausgelastet.");
+        
+        var flData = await flResponse.json();
+        replyText = flData.choices[0].message.content.trim();
+
+      } catch(flErr) {
+        console.log("Featherless fehlgeschlagen. Wechsle zu Stufe 3 (AI Horde)...", flErr.message);
+
+        // -------------------------------------------------------------
+        // STUFE 3: AI Horde (Absolutes Sicherheitsnetz)
+        // -------------------------------------------------------------
+        setStatus(true, 'Wechsle zu Crowd-Grid (Horde)...');
+        try {
+          var fullPrompt = "### System:\n" + systemPrompt + "\n\n";
+          chat.messages.slice(-5).forEach(function(m){
+            fullPrompt += (m.role === 'user' ? '### User:\n' : '### Assistant:\n') + m.content + '\n\n';
+          });
+          fullPrompt += "### Assistant:\n";
+
+          var hordeStart = await fetch("https://aihorde.net/api/v2/generate/text/async", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "apikey": "0000000000",
+              "Client-Agent": "AstreiosSchoolApp:v7.7"
+            },
+            body: JSON.stringify({
+              params: { prompt: fullPrompt, max_context_length: 2048, max_length: 600, temperature: 0.7, top_p: 0.9 },
+              models: ["meta-llama/Meta-Llama-3.1-70B-Instruct"]
+            })
+          });
+
+          if(!hordeStart.ok) throw new Error("Crowd-Grid verweigert Annahme.");
+          var startData = await hordeStart.json();
+          var jobId = startData.id;
+
+          var completed = false;
+          var attempts = 0;
+
+          while(!completed && attempts < 40) {
+            await new Promise(function(r){ setTimeout(r, 1500); });
+            attempts++;
+
+            var checkReq = await fetch("https://aihorde.net/api/v2/generate/text/status/" + jobId, {
+              method: "GET",
+              headers: { "Client-Agent": "AstreiosSchoolApp:v7.7" }
+            });
+
+            if(checkReq.ok) {
+              var statusData = await checkReq.json();
+              if(statusData.faulted) throw new Error("Rechenknoten-Fehler.");
+              if(statusData.wait_time > 0) setStatus(true, 'Horde berechnet (~' + statusData.wait_time + 's)...');
+              if(statusData.done) {
+                completed = true;
+                if(statusData.generations && statusData.generations.length > 0) {
+                  replyText = statusData.generations[0].text.trim();
+                }
+              }
+            }
+          }
+
+          if(!completed || !replyText) throw new Error("Horde-Timeout.");
+
+        } catch(hordeErr) {
+          replyText = "[Verbindungsproblem] Alle KI-Netzwerke (Google, Featherless & Horde) sind derzeit überlastet. Bitte warte kurz und versuche es erneut.";
+        }
+      }
     }
+
+    appendMsgDOM('assistant', replyText);
+    chat.messages.push({role:'assistant',content:replyText});
+    saveChats(chats);
+    setStatus(false,'Bereit');
     isGen = false;
   }
 
   function openSettings(){
     document.getElementById('userNameInput').value=userName;
-    document.getElementById('modelSelect').value=selectedModel;
     document.getElementById('settingsModal').classList.add('open');
   }
   function closeSettings(){document.getElementById('settingsModal').classList.remove('open');}
   function saveSettings(){
     userName=document.getElementById('userNameInput').value.trim();
-    selectedModel=document.getElementById('modelSelect').value;
     localStorage.setItem('astreios-username',userName);
-    localStorage.setItem('astreios-model',selectedModel);
-    updateBadge();
     closeSettings(); 
     renderMsgs();
   }
