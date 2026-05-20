@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Astreios — Schul- &amp; Paten-KI (v6.8)</title>
+  <title>Astreios — Schul- &amp; Paten-KI (v7.0)</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
@@ -99,13 +99,10 @@
     .fl { display:block; font-size:12px; color:var(--text-dim); margin-bottom:6px; font-family:'JetBrains Mono',monospace; }
     .fi { width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text); font-family:'JetBrains Mono',monospace; font-size:13px; padding:10px; outline:none; }
     select.fi { cursor:pointer; appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%2364748b' d='M6 8L0 0h12z'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 12px center; }
-    .fh { font-size:11px; color:var(--text-dim); margin-top:5px; font-family:'JetBrains Mono',monospace; }
     .modal-acts { display:flex; gap:10px; justify-content:flex-end; margin-top:20px; }
     .btn-cancel { background:transparent; border:1px solid var(--border); color:var(--text-dim); padding:8px 16px; border-radius:8px; cursor:pointer; }
     .btn-save { background:linear-gradient(135deg,var(--accent),#4f46e5); border:none; color:#fff; padding:8px 16px; border-radius:8px; font-weight:600; cursor:pointer; }
 
-    .ai-loading-banner { background:rgba(99,102,241,.1); border:1px solid rgba(99,102,241,.3); border-radius:10px; padding:10px 14px; font-size:12px; color:var(--accent2); font-family:'JetBrains Mono',monospace; margin-bottom:8px; display:none; }
-    .ai-loading-banner.show { display:block; }
     .footer { padding:8px 20px; border-top:1px solid var(--border); font-size:11px; color:var(--text-dim); display:flex; align-items:center; justify-content:space-between; flex-shrink:0; background:rgba(13,17,23,.95); z-index:10; }
 
     @media(max-width:600px) { .chat-sidebar { display:none; } }
@@ -117,7 +114,7 @@
       <div class="logo-star">&#10022;</div>
       <div>
         <div class="logo-name">ASTREIOS</div>
-        <div class="logo-tag">Lern-KI, Paten-Planer &amp; Schul-Assistent &middot; Offline Engine</div>
+        <div class="logo-tag">Schul-KI &amp; Paten-Planer &middot; Global Horde Engine</div>
       </div>
     </div>
     <div class="header-right">
@@ -137,11 +134,10 @@
     <div class="chat-panel">
       <div class="panel-header">
         <div><span class="status-dot" id="statusDot"></span><span id="statusText">Bereit</span></div>
-        <div class="model-badge" id="modelBadge">Llama-3.2-1B</div>
+        <div class="model-badge" id="modelBadge">Llama-3.1-8B</div>
       </div>
       <div class="messages" id="messages"></div>
       <div class="input-area">
-        <div class="ai-loading-banner" id="aiLoadingBanner">&#9654; KI wird lokal im Browser geladen. Das läuft komplett offline auf deinem Gerät!</div>
         <div class="input-row">
           <textarea id="userInput" placeholder="Plane eine Patenstunde, stelle Fragen oder quatsche privat..." rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
           <button class="btn-send" id="sendBtn" onclick="sendMessage()">&#10148;</button>
@@ -151,19 +147,19 @@
   </div>
 
   <div class="footer">
-    <span>&#169; Titus Wagner 2026 &mdash; Astreios v6.8 (Casual Playground Edition)</span>
+    <span>&#169; Titus Wagner 2026 &mdash; Astreios v7.0 (Distributed Crowd Infrastructure)</span>
   </div>
 
   <div class="modal-overlay" id="settingsModal">
     <div class="modal">
       <div class="modal-title">&#9881; Einstellungen</div>
       <div class="fg">
-        <label class="fl">&#129302; KI-Modell</label>
+        <label class="fl">&#129302; KI-Modell (Globaler Cluster)</label>
         <select class="fi" id="modelSelect">
-          <option value="Llama-3.2-1B-Instruct-q4f16_1-MLC" selected>Llama-3.2-1B &mdash; Empfohlen (Schnell, perfekt für alle Handys/A16)</option>
-          <option value="Llama-3.2-3B-Instruct-q4f16_1-MLC">Llama-3.2-3B &mdash; Höhere Intelligenz (Für Laptops / starke Tablets)</option>
-          <option value="Llama-3.1-8B-Instruct-q4f16_1-MLC">Llama-3.1-8B &mdash; Maximale Qualität (Erfordert PC / Mac / viel RAM)</option>
-          <option value="Llama-3.2-0.5B-Instruct-q4f16_1-MLC">Llama-3.2-0.5B &mdash; Ultra-Leichtgewicht (Maximale Performance)</option>
+          <option value="meta-llama/Meta-Llama-3.1-8B-Instruct" selected>Llama-3.1-8B &mdash; Empfohlener Allrounder (Sehr Intelligent)</option>
+          <option value="meta-llama/Llama-3.3-70B-Instruct">Llama-3.3-70B &mdash; Extreme Power (Erfordert ggf. mehr Wartezeit)</option>
+          <option value="meta-llama/Llama-3.2-3B-Instruct">Llama-3.2-3B &mdash; Leichtgewicht (Schnellere Generation)</option>
+          <option value="mistralai/Mistral-7B-Instruct-v0.3">Mistral-7B &mdash; Sehr kreativ für Spiele &amp; Texte</option>
         </select>
       </div>
       <div class="fg">
@@ -177,79 +173,18 @@
     </div>
   </div>
 
-  <script type="module">
-    import { CreateMLCEngine } from "https://esm.run/@mlc-ai/web-llm";
-
-    let LOCAL_MODEL = localStorage.getItem('astreios-model') || 'Llama-3.2-1B-Instruct-q4f16_1-MLC';
-    let engine = null;
-    let engineLoading = false;
-
-    function updateBadgeName(modelString) {
-      var shortName = modelString.split('-Instruct')[0].split('-q4')[0];
-      var badge = document.getElementById('modelBadge');
-      if (badge) badge.textContent = shortName + (engine ? " \u2713" : "");
-    }
-    
-    updateBadgeName(LOCAL_MODEL);
-
-    window._astreiosResetEngine = async function() {
-      if (engine) { try { await engine.unload(); } catch(e){} }
-      engine = null; engineLoading = false;
-      LOCAL_MODEL = localStorage.getItem('astreios-model') || 'Llama-3.2-1B-Instruct-q4f16_1-MLC';
-      updateBadgeName(LOCAL_MODEL);
-    };
-
-    async function initLocalAI() {
-      if (engine) return;
-      if (engineLoading) {
-        while (engineLoading) { await new Promise(r => setTimeout(r, 200)); }
-        return;
-      }
-      engineLoading = true;
-      document.getElementById('aiLoadingBanner').classList.add('show');
-      setStatus(true, "Lade KI...");
-      try {
-        engine = await CreateMLCEngine(LOCAL_MODEL, {
-          initProgressCallback: function(report) {
-            var pct = Math.round((report.progress || 0) * 100);
-            setStatus(true, "Lade " + pct + "%");
-          }
-        });
-        updateBadgeName(LOCAL_MODEL); setStatus(false, "Bereit");
-      } catch(err) {
-        engine = null; throw err;
-      } finally {
-        engineLoading = false;
-        document.getElementById('aiLoadingBanner').classList.remove('show');
-      }
-    }
-
-    window.api = async function(messages) {
-      if (!engine) await initLocalAI();
-      var response = await engine.chat.completions.create({
-        messages: messages,
-        temperature: 0.65,
-        max_tokens: 1024
-      });
-      return response.choices[0].message.content || "";
-    };
-
-    window.initLocalAI = initLocalAI;
-
-    function setStatus(busy, txt) {
-      var dot = document.getElementById('statusDot');
-      var st  = document.getElementById('statusText');
-      var btn = document.getElementById('sendBtn');
-      if (dot) dot.className = 'status-dot' + (busy ? ' busy' : '');
-      if (st)  st.textContent = txt;
-      if (btn) btn.disabled = busy;
-    }
-  </script>
-
   <script>
   var userName = localStorage.getItem('astreios-username') || '';
-  var selectedModel = localStorage.getItem('astreios-model') || 'Llama-3.2-1B-Instruct-q4f16_1-MLC';
+  var selectedModel = localStorage.getItem('astreios-model') || 'meta-llama/Meta-Llama-3.1-8B-Instruct';
   var isGen = false;
+
+  function updateBadge(){
+    var b = document.getElementById('modelBadge');
+    if(!b) return;
+    var parts = selectedModel.split('/');
+    b.textContent = parts[parts.length-1];
+  }
+  updateBadge();
 
   function loadChats(){ try{ return JSON.parse(localStorage.getItem('astreios-chats')||'[]'); }catch(e){ return []; } }
   function saveChats(c){ localStorage.setItem('astreios-chats',JSON.stringify(c)); }
@@ -312,9 +247,9 @@
       var d=document.createElement('div'); d.className='msg assistant';
       d.innerHTML='<div class="msg-avatar">&#10022;</div><div class="msg-bubble">'+
         'Hi'+grName+'! Ich bin <strong>Astreios</strong>.<br><br>'+
-        'Ich laufe offline in deinem Browser. Frag mich einfach alles Mögliche:<br>'+
+        'Ich bin jetzt an einen dezentralen Hochleistungs-Cluster angebunden! Das bedeutet unlimitierte KI-Power ohne Geräte-Überlastung.<br>'+
         '- **Spiele &amp; Ideen:** Suchst du lustige Spaß-Spiele, Gruppenspiele oder Party-Ideen?<br>'+
-        '- **Erklärungen:** Lass dir Schul- oder Alltagsthemen unkompliziert erklären.<br>'+
+        '- **Erklärungen:** Lass dir komplexe Themen unkompliziert und detailliert aufschlüsseln.<br>'+
         '- **Quatschen:** Schreib mir ganz entspannt über Gott und die Welt.';
       box.appendChild(d);
     } else {
@@ -343,6 +278,7 @@
   function autoResize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,140)+'px';}
   function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 
+  /* ASYNCHRONOUS HORDE PIPELINE IMPLEMENTATION */
   async function sendMessage(){
     if(isGen)return;
     var inp=document.getElementById('userInput');
@@ -360,31 +296,96 @@
     chat.messages.push({role:'user',content:prompt});
     saveChats(chats);
 
-    setStatus(true,'Astreios überlegt...');
-    try{
-      var hist=[];
-      var prev=chat.messages.slice(0,-1).slice(-6);
-      prev.forEach(function(m){ hist.push({role:m.role,content:m.content}); });
-      hist.push({role:'user',content:prompt});
-
-      var roleContext=userName?' Der Name des Nutzers ist '+userName+'.':'';
-      var sys='Du bist Astreios, ein absolut hilfsbereiter, lockerer KI-Kumpel für Alltag, Freizeit, Unterhaltung und Planung.\n'+
-              'Deine Richtlinien:\n'+
-              '- Antworte direkt, ungezwungen und kumpelhaft auf Deutsch.\n'+
-              '- Wenn nach Spielen oder Freizeitaktivitäten gefragt wird, schlage unkomplizierte Spaß-Spiele vor. Versuche NIEMALS, krampfhaft einen Lerneffekt, Bildungsaspekt oder pädagogischen Zweck hineinzukonstruieren! Es darf einfach nur um puren Spaß, Action und Lachen gehen.\n'+
-              '- Sei pragmatisch und vermeide lange Sicherheitsbelehrungen oder unbegründete Verweigerungen.'+roleContext;
+    setStatus(true,'Verbinde Cluster...');
+    
+    try {
+      // Prompt Formatierung für High-End Open-Source Modelle bauen
+      var fullPrompt = "### System:\nDu bist Astreios, ein absolut hilfsbereiter, lockerer KI-Kumpel für Schüler im Schulalltag, Freizeit und Planung.\n" +
+                        "Richtlinien:\n- Antworte immer direkt, verständlich und ungezwungen auf Deutsch.\n" +
+                        "- Wenn nach Spielen gefragt wird, schlage lustige Spaß-Spiele vor. Konstruiere NIEMALS krampfhaft Lerneffekte oder pädagogische Zwecke hinein! Spaß steht im Vordergrund.\n";
       
-      var reply = await window.api([{role:'system',content:sys}].concat(hist));
-      appendMsgDOM('assistant',reply);
-      chat.messages.push({role:'assistant',content:reply});
-      saveChats(chats);
+      if(userName) fullPrompt += "Der Name des Nutzers ist " + userName + ".\n";
+      fullPrompt += "\n";
 
+      var prev = chat.messages.slice(0,-1).slice(-4);
+      prev.forEach(function(m){
+        fullPrompt += (m.role === 'user' ? '### User:\n' : '### Assistant:\n') + m.content + '\n\n';
+      });
+      fullPrompt += "### User:\n" + prompt + "\n\n### Assistant:\n";
+
+      // Schritt 1: Sende Generationsauftrag an die Horde
+      var reqStart = await fetch("https://aihorde.net/api/v2/generate/text/async", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "apikey": "0000000000", // Offizieller anonymer Key
+          "Client-Agent": "AstreiosSchoolApp:v7.0"
+        },
+        body: JSON.stringify({
+          prompt: fullPrompt,
+          params: {
+            max_context_length: 2048,
+            max_length: 600,
+            temperature: 0.7,
+            top_p: 0.9
+          },
+          models: [selectedModel]
+        })
+      });
+
+      if(!reqStart.ok) throw new Error("Netzwerk-Cluster verweigert Annahme.");
+      var startData = await reqStart.json();
+      var jobId = startData.id;
+
+      // Schritt 2: Polling Schleife bis das Ergebnis fertig ist
+      var completed = false;
+      var attempts = 0;
+      var replyText = "";
+
+      setStatus(true, 'In Warteschlange...');
+
+      while(!completed && attempts < 40) {
+        await new Promise(function(r){ setTimeout(r, 1500); });
+        attempts++;
+
+        var checkReq = await fetch("https://aihorde.net/api/v2/generate/text/status/" + jobId, {
+          method: "GET",
+          headers: { "Client-Agent": "AstreiosSchoolApp:v7.0" }
+        });
+
+        if(checkReq.ok) {
+          var statusData = await checkReq.json();
+          
+          if(statusData.faulted) {
+            throw new Error("Cluster-Rechenknoten hatte einen Berechnungsfehler.");
+          }
+          
+          if(statusData.wait_time > 0) {
+            setStatus(true, 'Berechne (~' + statusData.wait_time + 's)...');
+          }
+
+          if(statusData.done) {
+            completed = true;
+            if(statusData.generations && statusData.generations.length > 0) {
+              replyText = statusData.generations[0].text.trim();
+            }
+          }
+        }
+      }
+
+      if(!completed) throw new Error("Zeitüberschreitung beim Warten auf freien Grafikprozessor.");
+      if(!replyText) replyText = "Ich habe eine leere Antwort erhalten. Bitte versuche es noch einmal.";
+
+      appendMsgDOM('assistant', replyText);
+      chat.messages.push({role:'assistant',content:replyText});
+      saveChats(chats);
       setStatus(false,'Bereit');
-    }catch(err){
-      appendMsgDOM('assistant','Fehler: '+err.message);
+
+    } catch(err) {
+      appendMsgDOM('assistant','[Verbindungsproblem] Ich konnte den globalen Rechen-Cluster nicht erreichen. Details: '+err.message);
       setStatus(false,'Fehler');
     }
-    isGen=false;
+    isGen = false;
   }
 
   function openSettings(){
@@ -395,14 +396,12 @@
   function closeSettings(){document.getElementById('settingsModal').classList.remove('open');}
   function saveSettings(){
     userName=document.getElementById('userNameInput').value.trim();
-    var newModel=document.getElementById('modelSelect').value;
+    selectedModel=document.getElementById('modelSelect').value;
     localStorage.setItem('astreios-username',userName);
-    if(newModel!==selectedModel){
-      selectedModel=newModel;
-      localStorage.setItem('astreios-model',selectedModel);
-      if(window._astreiosResetEngine) window._astreiosResetEngine();
-    }
-    closeSettings(); renderMsgs();
+    localStorage.setItem('astreios-model',selectedModel);
+    updateBadge();
+    closeSettings(); 
+    renderMsgs();
   }
 
   renderList(); renderMsgs();
