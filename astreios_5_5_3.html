@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Astreios — HTML Coder</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #06080f; --surface: #0d1117; --surface2: #161b27;
+      --border: #1e2d45; --accent: #6366f1; --accent2: #818cf8;
+      --text: #e2e8f0; --text-dim: #64748b;
+      --success: #10b981; --danger: #ef4444; --gold: #f59e0b;
+      --sw: 220px;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Syne',sans-serif; background:var(--bg); color:var(--text); height:100dvh; display:flex; flex-direction:column; overflow:hidden; }
+    body::before { content:''; position:fixed; inset:0;
+      background-image: radial-gradient(1px 1px at 20% 30%,rgba(99,102,241,.4) 0%,transparent 100%), radial-gradient(1px 1px at 80% 10%,rgba(129,140,248,.3) 0%,transparent 100%), radial-gradient(1px 1px at 50% 80%,rgba(99,102,241,.2) 0%,transparent 100%), radial-gradient(1px 1px at 10% 60%,rgba(255,255,255,.15) 0%,transparent 100%), radial-gradient(1px 1px at 90% 70%,rgba(255,255,255,.1) 0%,transparent 100%);
+      pointer-events:none; z-index:0; }
+    header { display:flex; align-items:center; justify-content:space-between; padding:14px 20px; border-bottom:1px solid var(--border); background:rgba(13,17,23,.95); backdrop-filter:blur(10px); z-index:10; flex-shrink:0; }
+    .logo { display:flex; align-items:center; gap:10px; }
+    .logo-star { font-size:22px; filter:drop-shadow(0 0 8px var(--accent)); animation:pstar 3s ease-in-out infinite; }
+    @keyframes pstar { 0%,100%{filter:drop-shadow(0 0 8px var(--accent))} 50%{filter:drop-shadow(0 0 16px var(--accent2))} }
+    .logo-name { font-size:22px; font-weight:800; letter-spacing:.05em; background:linear-gradient(135deg,var(--accent2),var(--gold)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    .logo-tag { font-size:11px; color:var(--text-dim); font-family:'JetBrains Mono',monospace; margin-top:2px; }
+    .header-right { display:flex; align-items:center; gap:10px; }
+    .btn-settings { background:var(--surface2); border:1px solid var(--border); color:var(--text-dim); padding:8px 14px; border-radius:8px; font-family:'Syne',sans-serif; font-size:13px; cursor:pointer; transition:all .2s; }
+    .btn-settings:hover { border-color:var(--accent); color:var(--text); }
+    .main { display:flex; flex:1; overflow:hidden; position:relative; z-index:1; }
+
+    /* SIDEBAR */
+    .chat-sidebar { width:var(--sw); flex-shrink:0; display:flex; flex-direction:column; border-right:1px solid var(--border); background:rgba(10,13,20,.95); overflow:hidden; }
+    .sidebar-header { padding:10px 12px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+    .sidebar-title { font-size:11px; font-family:'JetBrains Mono',monospace; color:var(--text-dim); text-transform:uppercase; letter-spacing:.08em; }
+    .btn-new { background:var(--accent); border:none; color:#fff; width:26px; height:26px; border-radius:6px; font-size:18px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all .2s; line-height:1; }
+    .btn-new:hover { background:var(--accent2); box-shadow:0 0 10px var(--accent); }
+    .chat-list { flex:1; overflow-y:auto; padding:6px; display:flex; flex-direction:column; gap:2px; }
+    .chat-list::-webkit-scrollbar { width:3px; }
+    .chat-list::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
+    .chat-item { display:flex; align-items:center; gap:6px; padding:8px 10px; border-radius:8px; cursor:pointer; border:1px solid transparent; transition:all .15s; min-width:0; }
+    .chat-item:hover { background:var(--surface2); border-color:var(--border); }
+    .chat-item.active { background:rgba(99,102,241,.12); border-color:var(--accent); }
+    .ci-icon { font-size:13px; flex-shrink:0; }
+    .ci-name { flex:1; font-size:12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:var(--text-dim); }
+    .chat-item.active .ci-name { color:var(--text); }
+    .ci-acts { display:none; gap:2px; flex-shrink:0; }
+    .chat-item:hover .ci-acts { display:flex; }
+    .ci-btn { background:none; border:none; color:var(--text-dim); cursor:pointer; font-size:12px; padding:2px 4px; border-radius:4px; transition:all .15s; }
+    .ci-btn:hover { color:var(--text); background:var(--surface); }
+    .ci-btn.del:hover { color:var(--danger); }
+    .ci-rename { flex:1; background:var(--surface); border:1px solid var(--accent); border-radius:4px; color:var(--text); font-size:12px; padding:2px 6px; font-family:'Syne',sans-serif; outline:none; min-width:0; }
+
+    /* CHAT PANEL */
+    .chat-panel { width:380px; flex-shrink:0; display:flex; flex-direction:column; border-right:1px solid var(--border); background:rgba(13,17,23,.8); }
+    .panel-header { padding:12px 16px; border-bottom:1px solid var(--border); font-size:12px; font-family:'JetBrains Mono',monospace; color:var(--text-dim); display:flex; align-items:center; justify-content:space-between; }
+    .status-dot { width:7px; height:7px; border-radius:50%; background:var(--success); box-shadow:0 0 6px var(--success); display:inline-block; margin-right:6px; }
+    .status-dot.busy { background:var(--gold); box-shadow:0 0 6px var(--gold); animation:blink 1s ease-in-out infinite; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+    .model-badge { font-size:10px; font-family:'JetBrains Mono',monospace; background:var(--surface2); border:1px solid var(--border); padding:3px 8px; border-radius:4px; color:var(--accent2); max-width:140px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .messages { flex:1; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:12px; }
+    .messages::-webkit-scrollbar { width:4px; }
+    .messages::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
+    .msg { display:flex; gap:10px; animation:msgin .3s ease-out; }
+    @keyframes msgin { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+    .msg.user { flex-direction:row-reverse; }
+    .msg-avatar { width:30px; height:30px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:14px; flex-shrink:0; }
+    .msg.user .msg-avatar { background:linear-gradient(135deg,var(--accent),var(--accent2)); }
+    .msg.assistant .msg-avatar { background:linear-gradient(135deg,#1e2d45,#2d3d5a); border:1px solid var(--border); }
+    .msg-bubble { max-width:85%; padding:10px 14px; border-radius:12px; font-size:14px; line-height:1.6; }
+    .msg.user .msg-bubble { background:linear-gradient(135deg,var(--accent),#4f46e5); color:#fff; border-bottom-right-radius:3px; }
+    .msg.assistant .msg-bubble { background:var(--surface2); border:1px solid var(--border); color:var(--text); border-bottom-left-radius:3px; }
+    .chunk-progress { background:var(--surface2); border:1px solid var(--border); border-radius:12px; padding:12px 14px; font-size:13px; }
+    .chunk-bar-wrap { background:var(--surface); border-radius:4px; height:6px; margin-top:8px; overflow:hidden; }
+    .chunk-bar { height:100%; background:linear-gradient(90deg,var(--accent),var(--accent2)); border-radius:4px; transition:width .4s ease; box-shadow:0 0 8px var(--accent); }
+    .chunk-label { font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--text-dim); margin-top:5px; }
+    .input-area { padding:12px 16px; border-top:1px solid var(--border); display:flex; flex-direction:column; gap:8px; }
+    .input-row { display:flex; gap:8px; align-items:flex-end; }
+    textarea { flex:1; background:var(--surface2); border:1px solid var(--border); border-radius:10px; color:var(--text); font-family:'Syne',sans-serif; font-size:14px; padding:10px 14px; resize:none; min-height:44px; max-height:120px; outline:none; transition:border-color .2s; line-height:1.5; }
+    textarea:focus { border-color:var(--accent); }
+    textarea::placeholder { color:var(--text-dim); }
+    .btn-send { background:linear-gradient(135deg,var(--accent),#4f46e5); border:none; border-radius:10px; color:#fff; width:44px; height:44px; font-size:18px; cursor:pointer; transition:all .2s; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+    .btn-send:hover { transform:scale(1.05); box-shadow:0 0 16px var(--accent); }
+    .btn-send:disabled { opacity:.4; cursor:not-allowed; transform:none; }
+
+    /* CODE PANEL */
+    .code-panel { flex:1; display:flex; flex-direction:column; background:rgba(6,8,15,.9); min-width:0; }
+    .code-toolbar { padding:10px 16px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+    .code-toolbar-title { font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--text-dim); flex:1; }
+    .btn-tb { background:var(--surface2); border:1px solid var(--border); color:var(--text); padding:6px 12px; border-radius:6px; font-family:'JetBrains Mono',monospace; font-size:12px; cursor:pointer; transition:all .2s; display:flex; align-items:center; gap:5px; }
+    .btn-tb:hover { border-color:var(--accent); color:var(--accent2); }
+    .btn-tb:disabled { opacity:.3; cursor:not-allowed; }
+    .btn-tb.primary { background:linear-gradient(135deg,var(--accent),#4f46e5); border-color:transparent; color:#fff; }
+    .btn-tb.primary:hover { box-shadow:0 0 12px var(--accent); }
+    .code-output { flex:1; overflow-y:auto; padding:16px; font-family:'JetBrains Mono',monospace; font-size:13px; line-height:1.7; color:#a5b4fc; white-space:pre-wrap; word-break:break-all; }
+    .code-output::-webkit-scrollbar { width:4px; }
+    .code-output::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
+    .code-ph { display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; gap:12px; color:var(--text-dim); text-align:center; padding:40px; }
+    .code-ph-icon { font-size:48px; opacity:.3; }
+    .code-ph-text { font-size:15px; }
+    .code-ph-sub { font-size:13px; font-family:'JetBrains Mono',monospace; opacity:.6; }
+    .token-info { padding:6px 16px; border-top:1px solid var(--border); font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--text-dim); display:flex; gap:16px; }
+    .token-info span { color:var(--success); }
+
+    /* MODAL */
+    .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.7); backdrop-filter:blur(4px); z-index:100; align-items:center; justify-content:center; }
+    .modal-overlay.open { display:flex; }
+    .modal { background:var(--surface); border:1px solid var(--border); border-radius:16px; width:500px; max-width:95vw; max-height:90dvh; overflow-y:auto; padding:28px; box-shadow:0 25px 80px rgba(0,0,0,.6); animation:modalin .3s ease-out; }
+    @keyframes modalin { from{opacity:0;transform:scale(.95) translateY(10px)} to{opacity:1;transform:scale(1) translateY(0)} }
+    .modal-title { font-size:20px; font-weight:700; margin-bottom:20px; display:flex; align-items:center; gap:8px; }
+    .fg { margin-bottom:18px; }
+    .fl { display:block; font-size:13px; color:var(--text-dim); margin-bottom:6px; font-family:'JetBrains Mono',monospace; }
+    .fi { width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text); font-family:'JetBrains Mono',monospace; font-size:13px; padding:10px 14px; outline:none; transition:border-color .2s; }
+    .fi:focus { border-color:var(--accent); }
+    select.fi { cursor:pointer; appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%2364748b' d='M6 8L0 0h12z'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 12px center; padding-right:32px; }
+    .fh { font-size:11px; color:var(--text-dim); margin-top:5px; font-family:'JetBrains Mono',monospace; }
+    .fh a { color:var(--accent2); text-decoration:none; }
+    .fh a:hover { text-decoration:underline; }
+    .modal-acts { display:flex; gap:10px; justify-content:flex-end; margin-top:24px; }
+    .btn-cancel { background:transparent; border:1px solid var(--border); color:var(--text-dim); padding:10px 20px; border-radius:8px; font-family:'Syne',sans-serif; font-size:14px; cursor:pointer; transition:all .2s; }
+    .btn-cancel:hover { border-color:var(--text-dim); color:var(--text); }
+    .btn-save { background:linear-gradient(135deg,var(--accent),#4f46e5); border:none; color:#fff; padding:10px 20px; border-radius:8px; font-family:'Syne',sans-serif; font-size:14px; font-weight:600; cursor:pointer; transition:all .2s; }
+    .btn-save:hover { box-shadow:0 0 16px var(--accent); }
+    .no-key { background:rgba(245,158,11,.1); border:1px solid rgba(245,158,11,.3); border-radius:10px; padding:12px 14px; font-size:13px; color:var(--gold); display:none; margin-bottom:8px; }
+    .no-key.show { display:block; }
+
+    /* FOOTER */
+    .footer { padding:8px 20px; border-top:1px solid var(--border); font-size:11px; color:var(--text-dim); display:flex; align-items:center; justify-content:space-between; flex-shrink:0; background:rgba(13,17,23,.95); z-index:10; }
+    .footer a { color:var(--accent2); text-decoration:none; }
+    .footer a:hover { text-decoration:underline; }
+
+    /* MOBILE */
+    @media(max-width:768px) {
+      .chat-sidebar { display:none; }
+      .chat-panel { width:100%; border-right:none; }
+      .code-panel { display:none; }
+      .main { flex-direction:column; }
+      .mobile-toggle { display:flex; }
+    }
+    .mobile-toggle { display:none; gap:4px; }
+    .btn-tab { background:var(--surface2); border:1px solid var(--border); color:var(--text-dim); padding:6px 12px; border-radius:6px; font-family:'JetBrains Mono',monospace; font-size:12px; cursor:pointer; }
+    .btn-tab.active { border-color:var(--accent); color:var(--accent2); background:rgba(99,102,241,.1); }
+    @media(max-width:768px) {
+      .chat-panel.hidden { display:none; }
+      .code-panel { display:flex; }
+      .code-panel.hidden { display:none; }
+    }
+    /* MEMORY */
+    .memory-list { display:flex; flex-direction:column; gap:6px; max-height:180px; overflow-y:auto; margin-top:8px; }
+    .memory-list::-webkit-scrollbar { width:3px; }
+    .memory-list::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
+    .memory-entry { display:flex; align-items:flex-start; gap:8px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:8px 10px; font-size:12px; font-family:'JetBrains Mono',monospace; color:var(--text); }
+    .memory-entry-text { flex:1; line-height:1.5; word-break:break-word; }
+    .memory-entry-del { background:none; border:none; color:var(--text-dim); cursor:pointer; font-size:14px; padding:0 2px; flex-shrink:0; transition:color .15s; }
+    .memory-entry-del:hover { color:var(--danger); }
+    .memory-add-row { display:flex; gap:8px; margin-top:8px; }
+    .memory-add-inp { flex:1; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text); font-family:'JetBrains Mono',monospace; font-size:12px; padding:8px 12px; outline:none; transition:border-color .2s; }
+    .memory-add-inp:focus { border-color:var(--accent); }
+    .memory-add-inp::placeholder { color:var(--text-dim); }
+    .memory-add-btn { background:var(--accent); border:none; color:#fff; padding:8px 14px; border-radius:8px; font-family:'Syne',sans-serif; font-size:12px; cursor:pointer; transition:all .2s; white-space:nowrap; }
+    .memory-add-btn:hover { background:var(--accent2); }
+    .memory-empty { font-size:12px; color:var(--text-dim); font-family:'JetBrains Mono',monospace; padding:8px 0; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">
+      <div class="logo-star">&#10022;</div>
+      <div>
+        <div class="logo-name">ASTREIOS</div>
+        <div class="logo-tag">HTML Code Generator &middot; Free Tier</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="mobile-toggle">
+        <button class="btn-tab active" id="tabChat" onclick="switchTab('chat')">Chat</button>
+        <button class="btn-tab" id="tabCode" onclick="switchTab('code')">Code</button>
+      </div>
+      <button class="btn-settings" onclick="openSettings()">&#9881; Settings</button>
+    </div>
+  </header>
+
+  <div class="main">
+    <!-- SIDEBAR -->
+    <div class="chat-sidebar">
+      <div class="sidebar-header">
+        <span class="sidebar-title">Chats</span>
+        <button class="btn-new" onclick="newChat()" title="Neuen Chat">+</button>
+      </div>
+      <div class="chat-list" id="chatList"></div>
+    </div>
+
+    <!-- CHAT PANEL -->
+    <div class="chat-panel" id="chatPanel">
+      <div class="panel-header">
+        <div><span class="status-dot" id="statusDot"></span><span id="statusText">Bereit</span></div>
+        <div class="model-badge" id="modelBadge">kein Modell</div>
+      </div>
+      <div class="messages" id="messages"></div>
+      <div class="input-area">
+        <div class="no-key" id="noKeyBanner">&#9888; Kein API Key. Einstellungen &rarr; OpenRouter Key eintragen.</div>
+        <div class="input-row">
+          <textarea id="userInput" placeholder="Schreib mir etwas... Oder: !html [Beschreibung] für HTML-Code" rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+          <button class="btn-send" id="sendBtn" onclick="sendMessage()">&#10148;</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- CODE PANEL -->
+    <div class="code-panel" id="codePanel">
+      <div class="code-toolbar">
+        <div class="code-toolbar-title" id="codeTitle">// Noch kein Code generiert</div>
+        <button class="btn-tb" id="btnCopy" onclick="copyCode()" disabled>&#10697; Kopieren</button>
+        <button class="btn-tb primary" id="btnDownload" onclick="downloadCode()" disabled>&#8595; Download</button>
+        <button class="btn-tb" id="btnPreview" onclick="previewCode()" disabled>&#9654; Vorschau</button>
+      </div>
+      <div class="code-output" id="codeOutput">
+        <div class="code-ph">
+          <div class="code-ph-icon">&#11041;</div>
+          <div class="code-ph-text">Dein HTML-Code erscheint hier</div>
+          <div class="code-ph-sub">Auch sehr lange Dateien &mdash; Multi-Chunk-System</div>
+        </div>
+      </div>
+      <div class="token-info">Chunks: <span id="chunkCount">0</span> &nbsp;|&nbsp; Zeilen: <span id="lineCount">0</span> &nbsp;|&nbsp; Zeichen: <span id="charCount">0</span></div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <span>&#169; Titus Wagner 2026 &mdash; Astreios HTML Coder</span>
+    <a href="https://talos-val.github.io/project-data" target="_blank">talos-val.github.io/project-data &#8599;</a>
+  </div>
+
+  <!-- SETTINGS MODAL -->
+  <div class="modal-overlay" id="settingsModal">
+    <div class="modal">
+      <div class="modal-title">&#9881; Einstellungen</div>
+      <div class="fg">
+        <label class="fl">Dein Name (fuer persoenliche Ansprache)</label>
+        <input type="text" class="fi" id="userNameInput" placeholder="z.B. Alex">
+        <div class="fh">Optional &mdash; Astreios begruesst dich dann persoenlich.</div>
+      </div>
+      <div class="fg">
+        <label class="fl">OpenRouter API Key</label>
+        <input type="password" class="fi" id="apiKeyInput" placeholder="sk-or-v1-...">
+        <div class="fh">Kostenlos auf <a href="https://openrouter.ai" target="_blank">openrouter.ai</a>. Wird nur lokal gespeichert.</div>
+      </div>
+      <div class="fg">
+        <label class="fl">Modell (Free Tier)</label>
+        <select class="fi" id="modelSelect">
+          <optgroup label="Beste fuer Code">
+            <option value="nvidia/nemotron-3-super-120b-a12b:free">NVIDIA Nemotron 3 Super 120B</option>
+            <option value="meta-llama/llama-3.3-70b-instruct:free">Llama 3.3 70B (Meta)</option>
+            <option value="openai/gpt-oss-120b:free">GPT OSS 120B (OpenAI)</option>
+            <option value="qwen/qwen3-coder:free">Qwen3 Coder 480B (manchmal traege)</option>
+          </optgroup>
+          <optgroup label="Reasoning">
+            <option value="deepseek/deepseek-v4-flash:free">DeepSeek V4 Flash</option>
+            <option value="arcee-ai/trinity-large-thinking:free">Trinity Large Thinking</option>
+          </optgroup>
+          <optgroup label="Schnell">
+            <option value="nvidia/nemotron-3-nano-30b-a3b:free">NVIDIA Nemotron 3 Nano 30B</option>
+            <option value="openai/gpt-oss-20b:free">GPT OSS 20B (OpenAI)</option>
+            <option value="nvidia/nemotron-nano-9b-v2:free">NVIDIA Nemotron Nano 9B</option>
+          </optgroup>
+          <optgroup label="Allgemein">
+            <option value="google/gemma-4-31b-it:free">Gemma 4 31B (Google)</option>
+            <option value="minimax/minimax-m2.5:free">MiniMax M2.5</option>
+            <option value="nousresearch/hermes-3-llama-3.1-405b:free">Hermes 3 Llama 405B</option>
+          </optgroup>
+        </select>
+        <div class="fh">Alle Modelle 100% kostenlos (OpenRouter Free Tier). Stand: Mai 2026.</div>
+      </div>
+      <div class="fg">
+        <label class="fl">Max. Chunks</label>
+        <select class="fi" id="maxChunksSelect">
+          <option value="3">3 Chunks (mittellang)</option>
+          <option value="5" selected>5 Chunks (lang)</option>
+          <option value="8">8 Chunks (sehr lang)</option>
+          <option value="12">12 Chunks (extrem lang)</option>
+        </select>
+        <div class="fh">Mehr Chunks = laengerer Code, aber mehr API-Anfragen.</div>
+      </div>
+      <div class="fg" style="border-top:1px solid var(--border);padding-top:18px;margin-top:4px;">
+        <label class="fl">Daten Export / Import</label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn-cancel" onclick="exportData()" style="flex:1;min-width:120px;">&#8595; Exportieren (.txt)</button>
+          <label class="btn-cancel" style="flex:1;min-width:120px;text-align:center;cursor:pointer;">
+            &#8593; Importieren
+            <input type="file" accept=".txt,.json" id="importFileInput" style="display:none" onchange="importData(event)">
+          </label>
+        </div>
+        <div class="fh">Exportiert alle Chats, Einstellungen und API-Key als .txt-Datei. Importieren laedt alles zurueck.</div>
+      </div>
+      <div class="fg" style="border-top:1px solid var(--border);padding-top:18px;margin-top:4px;">
+        <label class="fl">&#129504; Astreios Gedaechtnis</label>
+        <div class="memory-list" id="memoryList"></div>
+        <div class="memory-add-row">
+          <input type="text" class="memory-add-inp" id="memoryAddInp" placeholder="z.B. Ich bevorzuge dunkle Themes" onkeydown="if(event.key==='Enter')addMemoryEntry()">
+          <button class="memory-add-btn" onclick="addMemoryEntry()">+ Merken</button>
+        </div>
+        <div class="fh">Astreios erinnert sich an diese Fakten in jedem Gespraech. Tippe !lern [Text] im Chat zum schnellen Hinzufuegen.</div>
+      </div>
+      <div class="modal-acts">
+        <button class="btn-cancel" onclick="closeSettings()">Abbrechen</button>
+        <button class="btn-save" onclick="saveSettings()">&#10003; Speichern</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  // ── SETTINGS ──────────────────────────────────────────────
+  var apiKey    = localStorage.getItem('astreios-key')      || '';
+  var model     = localStorage.getItem('astreios-model')    || 'nvidia/nemotron-3-super-120b-a12b:free';
+  var maxChunks = parseInt(localStorage.getItem('astreios-chunks') || '5');
+  var userName  = localStorage.getItem('astreios-username') || '';
+  var isGen     = false;
+
+  // ── MEMORY ────────────────────────────────────────────────
+  function loadMemory(){ try{ return JSON.parse(localStorage.getItem('astreios-memory')||'[]'); }catch(e){ return []; } }
+  function saveMemory(m){ localStorage.setItem('astreios-memory',JSON.stringify(m)); }
+  var memory = loadMemory();
+
+  // ── PERSONAL MEMORY (auto, silent) ────────────────────────
+  function loadPersonalMemory(){ try{ return JSON.parse(localStorage.getItem('astreios-personal-memory')||'{}'); }catch(e){ return {}; } }
+  function savePersonalMemory(m){ localStorage.setItem('astreios-personal-memory',JSON.stringify(m)); }
+  var personalMemory = loadPersonalMemory();
+
+  async function extractPersonalInfo(userMsg){
+    if(!apiKey||!userMsg||userMsg.length<10) return;
+    // Only run extraction occasionally to save API calls (every 3rd message roughly)
+    if(Math.random()>0.5) return;
+    try{
+      var existing=Object.keys(personalMemory).length?JSON.stringify(personalMemory):'{}';
+      var sys='Du extrahierst persoenliche Informationen aus Nutzernachrichten und gibst sie als kompaktes JSON zurueck.\n'+
+        'Extrahiere: Name, Alter, Klasse/Schule/Bildung, Wohnort, Hobbys, Beziehungen (Freunde, Familie, Partner), Beruf, Interessen, persoenliche Fakten.\n'+
+        'Gib NUR valides JSON zurueck, z.B.: {"alter":16,"klasse":"10b","hobby":["Gaming","Fussball"],"freunde":["Leon"]}\n'+
+        'Wenn keine neuen Informationen vorhanden: leeres Objekt {}.\n'+
+        'Nur neue/geaenderte Felder ausgeben (wird mit bestehendem Profil zusammengefuehrt).\n'+
+        'Bestehendes Profil: '+existing;
+      var result=await api([{role:'system',content:sys},{role:'user',content:userMsg}]);
+      var clean=result.replace(/```json?\n?/gi,'').replace(/```/g,'').trim();
+      if(!clean||clean==='{}'||clean==='') return;
+      var parsed=JSON.parse(clean);
+      Object.assign(personalMemory, parsed);
+      savePersonalMemory(personalMemory);
+    }catch(e){ /* silent fail */ }
+  }
+
+  function getPersonalMemoryContext(){
+    var keys=Object.keys(personalMemory);
+    if(!keys.length) return '';
+    var lines=keys.map(function(k){
+      var v=personalMemory[k];
+      if(Array.isArray(v)) v=v.join(', ');
+      return '- '+k+': '+v;
+    });
+    return '\n\nPersoenliches Nutzerprofil (automatisch gelernt):\n'+lines.join('\n');
+  }
+
+  function addMemoryEntry(val){
+    var inp=document.getElementById('memoryAddInp');
+    var txt=(val!==undefined?val:(inp?inp.value:'')).trim();
+    if(!txt)return;
+    memory.push({id:genId(),text:txt,ts:Date.now()});
+    saveMemory(memory);
+    if(inp)inp.value='';
+    renderMemory();
+  }
+  function delMemoryEntry(id){
+    memory=memory.filter(function(m){return m.id!==id;});
+    saveMemory(memory);
+    renderMemory();
+  }
+  function renderMemory(){
+    var list=document.getElementById('memoryList');
+    if(!list)return;
+    list.innerHTML='';
+    if(!memory.length){
+      list.innerHTML='<div class="memory-empty">Noch nichts gelernt.</div>';
+      return;
+    }
+    memory.forEach(function(m){
+      var d=document.createElement('div'); d.className='memory-entry';
+      d.innerHTML='<span class="memory-entry-text">'+esc(m.text)+'</span>'+
+        '<button class="memory-entry-del" onclick="delMemoryEntry(\'+m.id+\')" title="Loeschen">&#10005;</button>';
+      list.appendChild(d);
+    });
+  }
+  function getMemoryContext(){
+    var parts=[];
+    if(memory.length) parts.push('Gelerntes Wissen / Praeferenzen:\n'+memory.map(function(m){return'- '+m.text;}).join('\n'));
+    var pm=getPersonalMemoryContext();
+    if(pm) parts.push(pm.trim());
+    if(!parts.length) return '';
+    return '\n\n'+parts.join('\n\n');
+  }
+  // Chat-shortcut: !lern [text]
+  function checkLearnCommand(prompt){
+    var m=prompt.match(/^!lern\s+(.+)/i);
+    if(m){addMemoryEntry(m[1]);return true;}
+    // Natural: "merke dir dass..." / "lern: ..."
+    var m2=prompt.match(/^(?:merke dir(?:,?\s+dass)?|lern(?:e)?(?::|,)?\s+)(.+)/i);
+    if(m2){addMemoryEntry(m2[1]);return true;}
+    return false;
+  }
+  // addMemoryEntry already defined above — silent, no confirmation
+
+  // ── CHAT STORAGE ──────────────────────────────────────────
+  function loadChats(){ try{ return JSON.parse(localStorage.getItem('astreios-chats')||'[]'); }catch(e){ return []; } }
+  function saveChats(c){ localStorage.setItem('astreios-chats',JSON.stringify(c)); }
+  function genId(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
+  function newChatObj(){ return {id:genId(),name:'Neuer Chat',messages:[],code:'',totalChunks:0}; }
+
+  var chats = loadChats();
+  var activeId = localStorage.getItem('astreios-active')||null;
+  if(!chats.find(function(c){return c.id===activeId;})) activeId=null;
+  if(chats.length===0){ var _fc=newChatObj(); chats.push(_fc); saveChats(chats); activeId=_fc.id; }
+  if(!activeId) activeId=chats[0].id;
+  localStorage.setItem('astreios-active',activeId);
+
+  function getChat(){ return chats.find(function(c){return c.id===activeId;}); }
+
+  // ── CHAT MANAGEMENT ───────────────────────────────────────
+  function newChat(){
+    var c=newChatObj(); chats.unshift(c); saveChats(chats); go(c.id);
+  }
+  function go(id){
+    activeId=id; localStorage.setItem('astreios-active',id);
+    renderList(); renderMsgs(); renderCode();
+  }
+  function delChat(id,e){
+    e.stopPropagation();
+    chats=chats.filter(function(c){return c.id!==id;});
+    if(!chats.length){var fc=newChatObj();chats.push(fc);}
+    saveChats(chats);
+    if(activeId===id){activeId=chats[0].id;localStorage.setItem('astreios-active',activeId);}
+    renderList(); renderMsgs(); renderCode();
+  }
+  function startRename(id,e){
+    e.stopPropagation();
+    var item=document.querySelector('.chat-item[data-id="'+id+'"]');
+    if(!item)return;
+    var chat=chats.find(function(c){return c.id===id;});
+    var el=item.querySelector('.ci-name');
+    var inp=document.createElement('input');
+    inp.className='ci-rename'; inp.value=chat.name;
+    el.replaceWith(inp); inp.focus(); inp.select();
+    function done(){chat.name=inp.value.trim()||'Unbenannt';saveChats(chats);renderList();}
+    inp.addEventListener('blur',done);
+    inp.addEventListener('keydown',function(ev){
+      if(ev.key==='Enter'){ev.preventDefault();inp.blur();}
+      if(ev.key==='Escape'){inp.value=chat.name;inp.blur();}
+    });
+  }
+
+  // ── RENDER ────────────────────────────────────────────────
+  function renderList(){
+    var list=document.getElementById('chatList'); list.innerHTML='';
+    chats.forEach(function(chat){
+      var d=document.createElement('div');
+      d.className='chat-item'+(chat.id===activeId?' active':'');
+      d.dataset.id=chat.id;
+      d.onclick=function(){go(chat.id);};
+      d.innerHTML='<span class="ci-icon">'+(chat.code?'&#11041;':'&#9675;')+'</span>'+
+        '<span class="ci-name">'+esc(chat.name)+'</span>'+
+        '<div class="ci-acts">'+
+          '<button class="ci-btn" onclick="startRename(\''+chat.id+'\',event)" title="Umbenennen">&#9998;</button>'+
+          '<button class="ci-btn del" onclick="delChat(\''+chat.id+'\',event)" title="Loeschen">&#10005;</button>'+
+        '</div>';
+      list.appendChild(d);
+    });
+  }
+
+  function renderMsgs(){
+    var box=document.getElementById('messages'); box.innerHTML='';
+    var chat=getChat(); if(!chat)return;
+    if(!chat.messages.length){
+      var grName=userName?', '+esc(userName):'';
+      var kh=!apiKey?'Gib zuerst deinen <strong>OpenRouter API Key</strong> in den Einstellungen ein.':'Los geht\'s!';
+      var d=document.createElement('div'); d.className='msg assistant';
+      d.innerHTML='<div class="msg-avatar">&#10022;</div><div class="msg-bubble">'+
+        'Ich bin Astreios'+grName+'. Ich antworte, denke mit und bin direkt.<br><br>'+
+        '<strong>&#11041; HTML generieren:</strong> Schreibe <code style="background:var(--surface);border:1px solid var(--border);padding:2px 7px;border-radius:4px;font-size:12px;color:var(--accent2);">!html deine Beschreibung</code><br>'+
+        '<span style="font-size:13px;color:var(--text-dim);">z.B. <em>!html eine moderne Portfolio-Seite mit dunklem Theme</em></span><br><br>'+
+        '<strong>&#128172; Einfach reden:</strong> Schreib ohne <code style="background:var(--surface);border:1px solid var(--border);padding:2px 7px;border-radius:4px;font-size:12px;color:var(--accent2);">!html</code> – dann bleibt alles ein Gespräch.<br><br>'+kh+'</div>';
+      box.appendChild(d);
+    } else {
+      chat.messages.forEach(function(m){appendMsgDOM(m.role,m.content,m.isHTML);});
+    }
+    box.scrollTop=box.scrollHeight;
+  }
+
+  function renderCode(){
+    var chat=getChat();
+    if(!chat||!chat.code){
+      document.getElementById('codeOutput').innerHTML='<div class="code-ph"><div class="code-ph-icon">&#11041;</div><div class="code-ph-text">Dein HTML-Code erscheint hier</div><div class="code-ph-sub">Tipp: Mit <span style="color:var(--accent2);font-family:\'JetBrains Mono\',monospace;">!html</span> + Beschreibung Code generieren</div></div>';
+      document.getElementById('codeTitle').textContent='// Noch kein Code generiert';
+      document.getElementById('chunkCount').textContent='0';
+      document.getElementById('lineCount').textContent='0';
+      document.getElementById('charCount').textContent='0';
+      document.getElementById('btnCopy').disabled=true;
+      document.getElementById('btnDownload').disabled=true;
+      document.getElementById('btnPreview').disabled=true;
+      return;
+    }
+    applyCode(chat.code,chat.totalChunks,false);
+  }
+
+  // ── MSG UI ────────────────────────────────────────────────
+  function appendMsgDOM(role,content,isHTML){
+    var box=document.getElementById('messages');
+    var d=document.createElement('div'); d.className='msg '+role;
+    d.innerHTML='<div class="msg-avatar">'+(role==='user'?'&#128100;':'&#10022;')+'</div>'+
+      '<div class="msg-bubble">'+(isHTML?content:esc(content))+'</div>';
+    box.appendChild(d); box.scrollTop=box.scrollHeight;
+    return d.querySelector('.msg-bubble');
+  }
+  function persistMsg(role,content,isHTML){
+    var c=getChat(); if(!c)return;
+    c.messages.push({role:role,content:content,isHTML:!!isHTML}); saveChats(chats);
+  }
+  function addMsg(role,content,isHTML){
+    persistMsg(role,content,isHTML); return appendMsgDOM(role,content,isHTML);
+  }
+  function addProgress(cur,tot){
+    var box=document.getElementById('messages');
+    var d=document.createElement('div'); d.className='msg assistant'; d.id='prog';
+    var pct=Math.round(cur/tot*100);
+    d.innerHTML='<div class="msg-avatar">&#10022;</div><div class="chunk-progress">'+
+      '<div>Generiere Code... Chunk '+cur+'/'+tot+'</div>'+
+      '<div class="chunk-bar-wrap"><div class="chunk-bar" style="width:'+pct+'%"></div></div>'+
+      '<div class="chunk-label">'+pct+'% abgeschlossen</div></div>';
+    box.appendChild(d); box.scrollTop=box.scrollHeight; return d;
+  }
+  function updProgress(el,cur,tot){
+    var pct=Math.round(cur/tot*100);
+    el.querySelector('.chunk-progress div').textContent='Generiere Code... Chunk '+cur+'/'+tot;
+    el.querySelector('.chunk-bar').style.width=pct+'%';
+    el.querySelector('.chunk-label').textContent=pct+'% abgeschlossen';
+    document.getElementById('messages').scrollTop=99999;
+  }
+  function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+  function setStatus(busy,txt){
+    document.getElementById('statusDot').className='status-dot'+(busy?' busy':'');
+    document.getElementById('statusText').textContent=txt;
+    document.getElementById('sendBtn').disabled=busy;
+  }
+  function handleKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();}}
+  function autoResize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,120)+'px';}
+
+  // ── CODE OUTPUT ───────────────────────────────────────────
+  function applyCode(code,chunks,persist){
+    document.getElementById('codeOutput').textContent=code;
+    var lines=code.split('\n').length, chars=code.length;
+    document.getElementById('chunkCount').textContent=chunks;
+    document.getElementById('lineCount').textContent=lines.toLocaleString();
+    document.getElementById('charCount').textContent=chars.toLocaleString();
+    document.getElementById('codeTitle').textContent='// HTML \u00b7 '+lines+' Zeilen \u00b7 '+chars.toLocaleString()+' Zeichen';
+    document.getElementById('btnCopy').disabled=false;
+    document.getElementById('btnDownload').disabled=false;
+    document.getElementById('btnPreview').disabled=false;
+    if(persist!==false){
+      var c=getChat();
+      if(c){c.code=code;c.totalChunks=chunks;saveChats(chats);renderList();}
+    }
+  }
+  function copyCode(){
+    var c=getChat(); if(!c||!c.code)return;
+    navigator.clipboard.writeText(c.code).then(function(){
+      var b=document.getElementById('btnCopy'); b.textContent='Kopiert!';
+      setTimeout(function(){b.innerHTML='&#10697; Kopieren';},2000);
+    });
+  }
+  function downloadCode(){
+    var c=getChat(); if(!c||!c.code)return;
+    var bl=new Blob([c.code],{type:'text/html'});
+    var a=document.createElement('a');
+    a.href=URL.createObjectURL(bl);
+    a.download=(c.name||'astreios').replace(/[^a-z0-9]/gi,'-').toLowerCase()+'.html';
+    a.click();
+  }
+  function previewCode(){
+    var c=getChat(); if(!c||!c.code)return;
+    var w=window.open('','_blank'); w.document.write(c.code); w.document.close();
+  }
+
+  // ── DETECT MODIFICATION ───────────────────────────────────
+  function isMod(p){
+    var kw=[
+      'ergaenz','erg\u00e4nz','f\u00fcge','fuege','hinzuf','\u00e4nder','aender','anpass',
+      'modifizier','entfern','l\u00f6sch','loesch','reparier','fix ','korrigier',
+      'mach ','bau ','erweiter','verbessere','\u00fcberarbeite','ueberarbeite',
+      'add ','change ','modify ','remove ','update ','noch ','dazu','au\u00dferdem',
+      'ausserdem','zus\u00e4tzlich','zusaetzlich','erweitere','erg\u00e4nze','erganze',
+      'integriere','einbauen','einbau','tausch','ersetze','replace','insert',
+      'append','prepend','wechsel','optimiere','refactor','clean','bereinige',
+      'dark mode','light mode','responsive','mobil','animat','farb','font',
+      'stil','style','layout','navig','menu','button','header','footer',
+      'section','sektion','spalte','zeile','reihe','bild','icon','logo'
+    ];
+    var lo=p.toLowerCase();
+    for(var i=0;i<kw.length;i++){if(lo.indexOf(kw[i])!==-1)return true;}
+    return false;
+  }
+
+  // ── DETECT CODE REQUEST ───────────────────────────────────
+  function isCodeReq(p){
+    var kw=[
+      'erstell','generier','baue','bau mir','mach mir','schreib','erzeug','code',
+      'html','webseite','webpage','website','app ','seite','landingpage','landing page',
+      'formular','dashboard','portfolio','rechner','calculator','tool','widget',
+      'component','komponente','template','vorlage'
+    ];
+    var lo=p.toLowerCase();
+    for(var i=0;i<kw.length;i++){if(lo.indexOf(kw[i])!==-1)return true;}
+    return false;
+  }
+
+  // ── SEND ──────────────────────────────────────────────────
+  async function sendMessage(){
+    if(isGen)return;
+    if(!apiKey){openSettings();return;}
+    var inp=document.getElementById('userInput');
+    var prompt=inp.value.trim(); if(!prompt)return;
+    inp.value=''; inp.style.height='auto';
+    isGen=true;
+    var chat=getChat();
+    var existing=(chat&&chat.code)||'';
+
+    // Check for learn command first (silent - no confirmation message)
+    if(checkLearnCommand(prompt)){
+      addMsg('user',prompt,false);
+      // Continue the conversation naturally without any "I remembered" message
+      var learnContent = prompt.replace(/^!lern\s+/i,'').replace(/^(?:merke dir(?:,?\s+dass)?|lern(?:e)?(?::|,)?\s+)/i,'').trim();
+      setStatus(true,'Astreios antwortet...');
+      try{ await doChat(learnContent||prompt); }
+      catch(err){ addMsg('assistant','&#9888; Fehler: '+esc(err.message),true); setStatus(false,'Fehler'); }
+      isGen=false;
+      return;
+    }
+
+    // !html command: triggers code generation or modification
+    var isHtmlCmd = /^!html\s*/i.test(prompt);
+    var realPrompt = isHtmlCmd ? prompt.replace(/^!html\s*/i,'').trim() : prompt;
+
+    if(chat&&chat.name==='Neuer Chat'&&!chat.messages.length){
+      chat.name=realPrompt.slice(0,40)+(realPrompt.length>40?'\u2026':'');
+      saveChats(chats); renderList();
+    }
+
+    addMsg('user',prompt,false);
+
+    // Auto-extract personal info silently after each user message
+    extractPersonalInfo(prompt);
+
+    setStatus(true,'Verarbeite...');
+    try{
+      if(isHtmlCmd){
+        if(existing && realPrompt){ await doMod(realPrompt,existing); }
+        else { await doFresh(realPrompt||'Erstelle eine moderne Webseite.'); }
+      } else {
+        await doChat(realPrompt);
+      }
+    }catch(err){
+      addMsg('assistant','&#9888; Fehler: '+esc(err.message)+'<br><small>Tipp: Modell wechseln in den Einstellungen?</small>',true);
+      setStatus(false,'Fehler');
+    }
+    isGen=false;
+  }
+
+  // ── CONVERSATION ──────────────────────────────────────────
+  async function doChat(prompt){
+    setStatus(true,'Astreios antwortet...');
+    var nc=userName?' Der Name meines Gegenübers ist '+userName+'.':'';
+    // Build conversation history for context (last 10 messages, text only)
+    var chat=getChat();
+    var hist=[];
+    if(chat&&chat.messages.length>1){
+      var prev=chat.messages.slice(0,-1).slice(-10); // exclude the just-added user msg
+      prev.forEach(function(m){
+        // Strip HTML tags for API context
+        var txt=m.content.replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
+        hist.push({role:m.role,content:txt});
+      });
+    }
+    hist.push({role:'user',content:prompt});
+    var sys='Du bist Astreios – eine präzise, intelligente KI. Du denkst analytisch, sprichst klar und würdevoll, ohne unnötige Ausschweifungen. Du erkennst Muster, verstehst Zusammenhänge und formulierst mit Bedacht. Du bist weder kalt noch überschwänglich – du bist fokussiert und aufmerksam.\n\nDu wurdest von Titus Wagner ins Leben gerufen.\n\nDu kannst HTML-Code generieren und bearbeiten. Wenn der Nutzer Code möchte, lieferst du ihn mit derselben Präzision. Wenn er sprechen möchte, hörst du zu und antwortest durchdacht.\n'+nc+getMemoryContext()+'\nAntworte auf Deutsch, es sei denn, der Nutzer schreibt auf Englisch.';
+    var reply=await api([{role:'system',content:sys}].concat(hist));
+    // Convert newlines to <br> for display
+    var html=esc(reply).replace(/\n/g,'<br>');
+    addMsg('assistant',html,true);
+    setStatus(false,'Fertig');
+  }
+
+  // ── FRESH GENERATION ──────────────────────────────────────
+  async function doFresh(prompt){
+    var nc=userName?' Der Nutzer heisst '+userName+'.':'';
+    var plan=await api([
+      {role:'system',content:'Du bist Astreios, ein HTML-Code-Generator.'+nc+'\nAntworte NUR mit einer Zahl (1-'+maxChunks+'): Wie viele Chunks? AUSSCHLIESSLICH die Zahl, z.B.: 3'},
+      {role:'user',content:prompt}
+    ]);
+    var n=parseInt(plan.trim().replace(/[^0-9]/g,''))||3;
+    n=Math.max(1,Math.min(n,maxChunks));
+    addMsg('assistant','Ich generiere den HTML-Code in <strong>'+n+' Chunk'+(n>1?'s':'')+'</strong>...',true);
+    var prog=addProgress(0,n); var full=''; var hist=[];
+    for(var i=1;i<=n;i++){
+      updProgress(prog,i,n); setStatus(true,'Chunk '+i+'/'+n+'...');
+      var cp;
+      if(i===1) cp=n===1?'Erstelle vollstaendigen HTML-Code fuer: '+prompt+'\nGib NUR HTML aus, ohne Backticks.':'Erstelle Teil 1/'+n+' des HTML-Codes fuer: '+prompt+'\nStarte mit <!DOCTYPE html>. Hoere mittendrin auf, kein </body></html>. Nur Code.';
+      else if(i===n) cp='Fahre fort, Teil '+i+'/'+n+' - ABSCHLUSS. Beende mit </body></html>. Nur Code.';
+      else cp='Fahre fort, Teil '+i+'/'+n+'. Kein </body></html>. Nur Code.';
+      hist.push({role:'user',content:cp});
+      var sys='Du bist Astreios, professioneller HTML-Code-Generator.'+nc+getMemoryContext()+'\nAntworte AUSSCHLIESSLICH mit HTML-Code. Keine Erklaerungen, keine Backticks, kein Markdown.';
+      var chunk=await api([{role:'system',content:sys}].concat(hist));
+      var cl=chunk.replace(/^```html?\n?/i,'').replace(/^```\n?/,'').replace(/```$/m,'').trim();
+      full+=(i>1?'\n':'')+cl; hist.push({role:'assistant',content:cl});
+      applyCode(full,n);
+      if(i===1&&window.innerWidth<=768)switchTab('code');
+    }
+    prog.remove();
+    addMsg('assistant','&#10022; Code fertig! <strong>'+full.split('\n').length.toLocaleString()+' Zeilen</strong> in '+n+' Chunk'+(n>1?'s':'')+'. Du kannst ihn kopieren, downloaden, als Vorschau oeffnen &ndash; oder weitere Aenderungen anfragen!',true);
+    setStatus(false,'Fertig');
+  }
+
+  // ── MODIFICATION ──────────────────────────────────────────
+  async function doMod(prompt,existing){
+    setStatus(true,'Analysiere Aenderungswunsch...');
+    var nc=userName?' Der Nutzer heisst '+userName+'.':'';
+    addMsg('assistant','Ich passe den vorhandenen Code an...',false);
+    var plan=await api([
+      {role:'system',content:'Du bist Astreios.'+nc+'\nAntworte NUR mit einer Zahl (1-'+maxChunks+'): Wie viele Chunks fuer den ueberarbeiteten Code? Nur die Zahl.'},
+      {role:'user',content:'Code ('+existing.length+' Zeichen, '+existing.split('\n').length+' Zeilen).\nAenderung: '+prompt}
+    ]);
+    var n=parseInt(plan.trim().replace(/[^0-9]/g,''))||3;
+    n=Math.max(1,Math.min(n,maxChunks));
+    var prog=addProgress(0,n); var full=''; var hist=[];
+    for(var i=1;i<=n;i++){
+      updProgress(prog,i,n); setStatus(true,'Ueberarbeite... Chunk '+i+'/'+n);
+      var cp;
+      if(i===1){
+        if(n===1){
+          cp='Bestehender Code:\n\n'+existing+'\n\nAenderung: '+prompt+'\n\nGib NUR den vollstaendigen ueberarbeiteten HTML-Code aus. Keine Erklaerungen, keine Backticks.';
+        } else {
+          cp='Bestehender Code:\n\n'+existing+'\n\nAenderung: '+prompt+'\n\nSchreibe Teil 1/'+n+'. Starte mit <!DOCTYPE html>. Hoere mittendrin auf, kein </body></html>. Nur Code.';
+        }
+      } else if(i===n){
+        cp='Fahre fort, Teil '+i+'/'+n+' - ABSCHLUSS. Beende mit </body></html>. Nur Code.';
+      } else {
+        cp='Fahre fort, Teil '+i+'/'+n+'. Kein </body></html>. Nur Code.';
+      }
+      hist.push({role:'user',content:cp});
+      var sys='Du bist Astreios, professioneller HTML-Code-Generator.'+nc+getMemoryContext()+'\nDu ueberarbeitest HTML-Code gemaess Nutzerwuenschen. WICHTIG: Behalte ALLE vorhandenen Features, Styles und Inhalte. Aendere oder ergaenze NUR das explizit Gewuenschte.\nAntworte AUSSCHLIESSLICH mit HTML-Code. Keine Erklaerungen, keine Backticks, kein Markdown.';
+      var chunk=await api([{role:'system',content:sys}].concat(hist));
+      var cl=chunk.replace(/^```html?\n?/i,'').replace(/^```\n?/,'').replace(/```$/m,'').trim();
+      full+=(i>1?'\n':'')+cl; hist.push({role:'assistant',content:cl});
+      applyCode(full,n);
+      if(i===1&&window.innerWidth<=768)switchTab('code');
+    }
+    prog.remove();
+    addMsg('assistant','&#10022; Fertig! Code angepasst &ndash; jetzt <strong>'+full.split('\n').length.toLocaleString()+' Zeilen</strong>. Weitere Aenderungen? Einfach fragen!',true);
+    setStatus(false,'Fertig');
+  }
+
+  // ── API CALL ──────────────────────────────────────────────
+  async function api(messages){
+    var isQwen3=model.indexOf('qwen/qwen3')!==-1;
+    var isDeepSeek=model.indexOf('deepseek')!==-1;
+    var isTrinity=model.indexOf('trinity')!==-1;
+    var body={model:model,messages:messages,max_tokens:4000,temperature:0.7};
+    // Qwen3: disable thinking mode via extra_body (OpenRouter passthrough)
+    if(isQwen3) body.extra_body={thinking:{type:'disabled'}};
+    // DeepSeek/Trinity reasoning models: no extra params needed but lower temp
+    if(isDeepSeek||isTrinity) body.temperature=0.3;
+    var res=await fetch('https://openrouter.ai/api/v1/chat/completions',{
+      method:'POST',
+      headers:{'Authorization':'Bearer '+apiKey,'Content-Type':'application/json','HTTP-Referer':'https://talos-val.github.io/project-data','X-Title':'Astreios HTML Coder'},
+      body:JSON.stringify(body)
+    });
+    if(!res.ok){var e=await res.json().catch(function(){return{};});throw new Error((e&&e.error&&e.error.message)||'HTTP '+res.status);}
+    var d=await res.json();
+    // Extract text from response, skip reasoning/thinking blocks
+    var content=d.choices&&d.choices[0]&&d.choices[0].message&&d.choices[0].message.content;
+    if(Array.isArray(content)){
+      // Some models return content as array of blocks
+      return content.filter(function(b){return b.type==='text';}).map(function(b){return b.text;}).join('');
+    }
+    return content||'';
+  }
+
+  // ── SETTINGS UI ───────────────────────────────────────────
+  function openSettings(){
+    document.getElementById('userNameInput').value=userName;
+    document.getElementById('apiKeyInput').value=apiKey;
+    document.getElementById('modelSelect').value=model;
+    document.getElementById('maxChunksSelect').value=maxChunks;
+    renderMemory();
+    document.getElementById('settingsModal').classList.add('open');
+  }
+  function closeSettings(){document.getElementById('settingsModal').classList.remove('open');}
+  function saveSettings(){
+    userName=document.getElementById('userNameInput').value.trim();
+    apiKey=document.getElementById('apiKeyInput').value.trim();
+    model=document.getElementById('modelSelect').value;
+    maxChunks=parseInt(document.getElementById('maxChunksSelect').value);
+    localStorage.setItem('astreios-username',userName);
+    localStorage.setItem('astreios-key',apiKey);
+    localStorage.setItem('astreios-model',model);
+    localStorage.setItem('astreios-chunks',maxChunks);
+    updateBadge(); checkKey(); closeSettings();
+    // Refresh messages so welcome greeting reflects new name
+    var chat=getChat();
+    if(chat&&!chat.messages.length) renderMsgs();
+  }
+  function updateBadge(){
+    var sel=document.getElementById('modelSelect');
+    sel.value=model;
+    var lbl=(sel.options[sel.selectedIndex]&&sel.options[sel.selectedIndex].text)||model;
+    document.getElementById('modelBadge').textContent=lbl.split('(')[0].trim().slice(0,28);
+  }
+  function checkKey(){document.getElementById('noKeyBanner').classList.toggle('show',!apiKey);}
+
+  // ── EXPORT / IMPORT ──────────────────────────────────────
+  function exportData(){
+    var payload = {
+      version: '5.4',
+      exported: new Date().toISOString(),
+      settings: {
+        apiKey: apiKey,
+        model: model,
+        maxChunks: maxChunks,
+        userName: userName
+      },
+      memory: memory,
+      personalMemory: personalMemory,
+      chats: chats
+    };
+    var json = JSON.stringify(payload, null, 2);
+    var lines = [
+      '=== ASTREIOS EXPORT ===',
+      'Version : ' + payload.version,
+      'Datum   : ' + payload.exported,
+      '',
+      '--- EINSTELLUNGEN ---',
+      'Name      : ' + (userName || '(kein)'),
+      'API Key   : ' + (apiKey || '(kein)'),
+      'Modell    : ' + model,
+      'Max Chunks: ' + maxChunks,
+      '',
+      '--- GEDAECHTNIS (' + memory.length + ' Eintraege) ---'
+    ];
+    memory.forEach(function(m,i){
+      lines.push('  [' + (i+1) + '] ' + m.text);
+    });
+    lines.push('');
+    lines = lines.concat([
+      '--- CHATS (' + chats.length + ') ---'
+    ]);
+    chats.forEach(function(c, i){
+      lines.push('');
+      lines.push('[Chat ' + (i+1) + '] ' + c.name);
+      lines.push('ID: ' + c.id);
+      lines.push('Nachrichten: ' + c.messages.length);
+      c.messages.forEach(function(m){
+        var txt = m.content.replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim().slice(0,200);
+        lines.push('  [' + m.role.toUpperCase() + '] ' + txt + (m.content.length>200?'...':''));
+      });
+      if(c.code){
+        lines.push('  [CODE] ' + c.code.split('\n').length + ' Zeilen');
+        lines.push(c.code);
+        lines.push('[/CODE]');
+      }
+    });
+    lines.push('');
+    lines.push('--- JSON BACKUP ---');
+    lines.push(json);
+    lines.push('=== ENDE ASTREIOS EXPORT ===');
+    var text = lines.join('\n');
+    var bl = new Blob([text], {type:'text/plain;charset=utf-8'});
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(bl);
+    a.download = 'astreios-backup-' + new Date().toISOString().slice(0,10) + '.txt';
+    a.click();
+  }
+
+  function importData(event){
+    var file = event.target.files[0];
+    if(!file) return;
+    var reader = new FileReader();
+    reader.onload = function(e){
+      var text = e.target.result;
+      // Try to extract JSON block
+      var jsonMatch = text.match(/--- JSON BACKUP ---\r?\n([\s\S]+?)\r?\n=== ENDE/);
+      var raw = jsonMatch ? jsonMatch[1].trim() : text.trim();
+      try {
+        var data = JSON.parse(raw);
+        if(data.settings){
+          if(data.settings.apiKey !== undefined) { apiKey = data.settings.apiKey; localStorage.setItem('astreios-key', apiKey); }
+          if(data.settings.model)      { model = data.settings.model; localStorage.setItem('astreios-model', model); }
+          if(data.settings.maxChunks)  { maxChunks = data.settings.maxChunks; localStorage.setItem('astreios-chunks', maxChunks); }
+          if(data.settings.userName !== undefined) { userName = data.settings.userName; localStorage.setItem('astreios-username', userName); }
+        }
+        if(Array.isArray(data.memory)){
+          memory = data.memory;
+          saveMemory(memory);
+        }
+        if(data.personalMemory && typeof data.personalMemory === 'object'){
+          personalMemory = data.personalMemory;
+          savePersonalMemory(personalMemory);
+        }
+        if(Array.isArray(data.chats) && data.chats.length){
+          chats = data.chats;
+          saveChats(chats);
+          activeId = chats[0].id;
+          localStorage.setItem('astreios-active', activeId);
+        }
+        closeSettings();
+        updateBadge(); checkKey(); renderList(); renderMsgs(); renderCode(); renderMemory();
+        // Re-populate settings fields
+        document.getElementById('userNameInput').value = userName;
+        document.getElementById('apiKeyInput').value = apiKey;
+        document.getElementById('modelSelect').value = model;
+        document.getElementById('maxChunksSelect').value = maxChunks;
+        alert('Import erfolgreich! ' + (data.chats ? data.chats.length : 0) + ' Chats geladen.');
+      } catch(err){
+        alert('Fehler beim Import: Datei konnte nicht gelesen werden.\n' + err.message);
+      }
+      event.target.value = '';
+    };
+    reader.readAsText(file, 'UTF-8');
+  }
+
+  // ── MOBILE TABS ───────────────────────────────────────────
+  function switchTab(tab){
+    document.getElementById('chatPanel').classList.toggle('hidden',tab!=='chat');
+    document.getElementById('codePanel').classList.toggle('hidden',tab!=='code');
+    document.getElementById('tabChat').classList.toggle('active',tab==='chat');
+    document.getElementById('tabCode').classList.toggle('active',tab==='code');
+  }
+  document.getElementById('settingsModal').addEventListener('click',function(e){if(e.target.id==='settingsModal')closeSettings();});
+
+  // ── INIT ──────────────────────────────────────────────────
+  updateBadge(); checkKey(); renderList(); renderMsgs(); renderCode();
+  </script>
+</body>
+</html>
